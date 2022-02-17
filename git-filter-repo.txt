@@ -1,0 +1,14 @@
+git-filter-repo --path-rename doc/topics.md:trash/topics.md
+git-filter-repo --path-rename logs2020:trash/logs2020
+git-filter-repo --path-rename logs2021:trash/logs2021
+git-filter-repo --path-rename src/board/SINS_archive:trash/SINS_archive
+git-filter-repo --path-rename src/common/ccsds-uslp-cpp:trash/ccsds-uslp-cpp
+git-filter-repo --path src/board/BCS/components/radio/sx126x --invert-paths
+git-filter-repo --path-rename src/common/drivers/sx126x:src/board/BCS/components/radio/sx126x
+git-filter-repo --path-rename src/ground:trash/ground
+git-filter-repo --path-rename construction/3Dmodel_Ground_station:trash/3Dmodel_Ground_station
+git-filter-repo --path-rename construction/STLs:trash/STLs
+git-filter-repo --path-rename construction/gcs_enkoder-kron.stl:trash/gcs_enkoder-kron.stl
+git-filter-repo --path-rename src/research/ccsds-uslp-cpp-dev:trash/ccsds-uslp-cpp-dev
+git-filter-repo --path-rename construction/CanCubeSat-for-GKS:trash/CanCubeSat-for-GKS
+git-filter-repo --path trash --invert-paths
