@@ -7145,8 +7145,6 @@ Source: www.kingbright.com</description>
 <junction x="58.42" y="25.4"/>
 <wire x1="73.66" y1="25.4" x2="58.42" y2="25.4" width="0.1524" layer="91"/>
 </segment>
-</net>
-<net name="GND" class="0">
 <segment>
 <pinref part="U$13" gate="G$1" pin="S"/>
 <wire x1="-63.5" y1="-12.7" x2="-68.58" y2="-12.7" width="0.1524" layer="91"/>

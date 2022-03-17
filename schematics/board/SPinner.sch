@@ -3,7 +3,7 @@
 <eagle version="9.4.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -268,6 +268,11 @@
 <rectangle x1="2.996" y1="2.996" x2="3.504" y2="3.504" layer="51"/>
 <rectangle x1="2.996" y1="-3.504" x2="3.504" y2="-2.996" layer="51"/>
 </package>
+<package name="GRAFIT-PASSIVE">
+<smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
+<smd name="P$3" x="0" y="0" dx="1.4" dy="1.4" layer="1" roundness="100"/>
+<hole x="0" y="0" drill="1"/>
+</package>
 </packages>
 <symbols>
 <symbol name="KCONNECT">
@@ -277,6 +282,13 @@
 <wire x1="5.08" y1="-2.54" x2="5.08" y2="2.54" width="0.254" layer="94"/>
 <wire x1="5.08" y1="2.54" x2="-2.54" y2="2.54" width="0.254" layer="94"/>
 <text x="-1.778" y="3.302" size="1.27" layer="95">&gt;NAME</text>
+</symbol>
+<symbol name="GRAFIT-PASSIVE">
+<wire x1="-7.62" y1="5.08" x2="-7.62" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="-7.62" y1="-5.08" x2="7.62" y2="-5.08" width="0.254" layer="94"/>
+<wire x1="7.62" y1="-5.08" x2="7.62" y2="5.08" width="0.254" layer="94"/>
+<wire x1="7.62" y1="5.08" x2="-7.62" y2="5.08" width="0.254" layer="94"/>
+<pin name="P$1" x="0" y="-10.16" length="middle" rot="R90"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -351,6 +363,21 @@
 </device>
 </devices>
 </deviceset>
+<deviceset name="GRAFIT-PASSIVE">
+<gates>
+<gate name="G$1" symbol="GRAFIT-PASSIVE" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="GRAFIT-PASSIVE">
+<connects>
+<connect gate="G$1" pin="P$1" pad="OUT P$3"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
 </devicesets>
 </library>
 </libraries>
@@ -372,6 +399,10 @@
 <part name="U$20" library="CanCubeSat" deviceset="KCONNECT" device="" value="KCONNECT"/>
 <part name="U$21" library="CanCubeSat" deviceset="KCONNECT" device="" value="KCONNECT"/>
 <part name="U$5" library="CanCubeSat" deviceset="KCONNECT" device="QUAD"/>
+<part name="U$6" library="CanCubeSat" deviceset="GRAFIT-PASSIVE" device=""/>
+<part name="U$7" library="CanCubeSat" deviceset="GRAFIT-PASSIVE" device=""/>
+<part name="U$8" library="CanCubeSat" deviceset="GRAFIT-PASSIVE" device=""/>
+<part name="U$9" library="CanCubeSat" deviceset="GRAFIT-PASSIVE" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -405,6 +436,10 @@
 <instance part="U$5" gate="G$1" x="88.9" y="106.68" smashed="yes">
 <attribute name="NAME" x="87.122" y="109.982" size="1.27" layer="95"/>
 </instance>
+<instance part="U$6" gate="G$1" x="17.78" y="91.44" smashed="yes"/>
+<instance part="U$7" gate="G$1" x="17.78" y="68.58" smashed="yes"/>
+<instance part="U$8" gate="G$1" x="17.78" y="45.72" smashed="yes"/>
+<instance part="U$9" gate="G$1" x="17.78" y="22.86" smashed="yes"/>
 </instances>
 <busses>
 </busses>

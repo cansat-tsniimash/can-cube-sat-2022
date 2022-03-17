@@ -3,7 +3,7 @@
 <eagle version="9.4.2">
 <drawing>
 <settings>
-<setting alwaysvectorfont="no"/>
+<setting alwaysvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.7" unitdist="mm" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.01" altunitdist="mm" altunit="mm"/>
@@ -176,7 +176,9 @@
 <wire x1="62.749" y1="57.445" x2="57.445" y2="62.749" width="0.001" layer="20"/>
 <wire x1="0" y1="7.071" x2="25.095" y2="32.166" width="0.1" layer="20"/>
 <wire x1="32.166" y1="25.095" x2="7.071" y2="0" width="0.1" layer="20"/>
-<wire x1="71.404" y1="7.071" x2="46.308" y2="32.166" width="0.1" layer="20"/>
+<wire x1="70.711" y1="19.092" x2="68.58811875" y2="16.96911875" width="0.1" layer="20"/>
+<wire x1="68.58811875" y1="16.96911875" x2="61.518465625" y2="16.96770625" width="0.1" layer="20" curve="-89.977084"/>
+<wire x1="61.518465625" y1="16.96770625" x2="46.308" y2="32.166" width="0.1" layer="20"/>
 <wire x1="39.237" y1="25.095" x2="64.333" y2="0" width="0.1" layer="20"/>
 <wire x1="7.071" y1="0" x2="0" y2="7.071" width="0.1" layer="20"/>
 <wire x1="71.404" y1="7.071" x2="64.333" y2="0" width="0.1" layer="20"/>
@@ -190,6 +192,8 @@
 <wire x1="64.333" y1="71.404" x2="71.404" y2="64.333" width="0.1" layer="20"/>
 <wire x1="0" y1="64.333" x2="7.071" y2="71.404" width="0.1" layer="20"/>
 <wire x1="39.237" y1="46.308" x2="32.166" y2="46.308" width="0.1" layer="20" curve="-90"/>
+<wire x1="71.404" y1="7.071" x2="77.075" y2="12.728" width="0.1" layer="20"/>
+<wire x1="77.075" y1="12.728" x2="70.711" y2="19.092" width="0.1" layer="20"/>
 </plain>
 <libraries>
 <library name="CanCubeSat">
@@ -231,6 +235,11 @@
 <rectangle x1="2.996" y1="-3.504" x2="3.504" y2="-2.996" layer="51"/>
 <smd name="P$2" x="0" y="0" dx="8.5" dy="8.5" layer="1"/>
 <pad name="P$1" x="0" y="0" drill="6"/>
+</package>
+<package name="GRAFIT-PASSIVE">
+<smd name="OUT" x="0" y="0" dx="2" dy="2" layer="16" roundness="100" rot="R90"/>
+<smd name="P$3" x="0" y="0" dx="1.4" dy="1.4" layer="1" roundness="100"/>
+<hole x="0" y="0" drill="1"/>
 </package>
 </packages>
 </library>
@@ -454,6 +463,10 @@ design rules under a new name.</description>
 <element name="U$5" library="CanCubeSat" package="KCONNECT_QUAD" value="KCONNECTQUAD" x="35.702" y="35.702" smashed="yes">
 <attribute name="VALUE" x="32.162" y="29.257" size="1.27" layer="27"/>
 </element>
+<element name="U$6" library="CanCubeSat" package="GRAFIT-PASSIVE" value="GRAFIT-PASSIVE" x="20.709" y="20.709" smashed="yes" rot="R45"/>
+<element name="U$7" library="CanCubeSat" package="GRAFIT-PASSIVE" value="GRAFIT-PASSIVE" x="20.709" y="50.709" smashed="yes" rot="R315"/>
+<element name="U$8" library="CanCubeSat" package="GRAFIT-PASSIVE" value="GRAFIT-PASSIVE" x="50.709" y="20.709" smashed="yes" rot="R315"/>
+<element name="U$9" library="CanCubeSat" package="GRAFIT-PASSIVE" value="GRAFIT-PASSIVE" x="50.709" y="50.709" smashed="yes" rot="R45"/>
 </elements>
 <signals>
 <signal name="BUS+1">
@@ -484,8 +497,8 @@ design rules under a new name.</description>
 <polygon width="0.1524" layer="16" isolate="0.3" thermals="no">
 <vertex x="-0.3782" y="71.8028"/>
 <vertex x="-0.3782" y="-0.3072"/>
-<vertex x="71.8738" y="-0.3072"/>
-<vertex x="71.8738" y="71.8028"/>
+<vertex x="80.2738" y="-0.3072"/>
+<vertex x="80.2738" y="71.8028"/>
 </polygon>
 </signal>
 <signal name="N$2">
@@ -516,8 +529,8 @@ design rules under a new name.</description>
 <polygon width="0.1524" layer="1" isolate="0.3" thermals="no">
 <vertex x="-0.3782" y="71.8028"/>
 <vertex x="-0.3782" y="-0.3072"/>
-<vertex x="71.8738" y="-0.3072"/>
-<vertex x="71.8738" y="71.8028"/>
+<vertex x="78.8738" y="-0.3072"/>
+<vertex x="78.8738" y="71.8028"/>
 </polygon>
 </signal>
 <signal name="CMD">
