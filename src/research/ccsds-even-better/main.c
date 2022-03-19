@@ -33,7 +33,6 @@ int main() {
     sap_config.data_capacity = 200;
 
 
-
     uslp_init(&uslp, malloc, free);
     pc_init(&uslp, &pc, &pc_config);
     mc_init(&uslp, &mc, &pc, &mc_config);

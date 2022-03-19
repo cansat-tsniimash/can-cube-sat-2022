@@ -4,6 +4,7 @@
 #include "vc.h"
 #include "uslp_mx.h"
 #include <stdio.h>
+#include "map.h"
 
 typedef struct {
     uslp_core_t* uslp;
@@ -56,7 +57,11 @@ void _sep_forcing(sep_t* sep) {
     mx_node* vcmx = mx_current_updated(mcmx);
     mx_node* mapmx = mx_current_updated(vcmx);
     map_t* map = mx_get_map(mapmx);
-    //Closing tfdf of map, pushing it to VC, 
+    vc_t* vc= mx_get_vc(vcmx);
+
+    map_force_finish(map);
+    
+    //pushing it to VC, 
     //setting ready every channel on the way
 
 }

@@ -47,7 +47,7 @@ void vc_init(uslp_core_t* uslp, vc_t* vc, mc_t* mc, const vc_config_t* config) {
     vc->cop_type = config->cop_type;
     if (config->cop_type == COP_NONE) {
         vc->container.cop_none.tfdz_size = config->tfdz_max_size;
-        vc->container.cop_none.frame.tfdz = vc->uslp->mem._alloc(config->tfdz_max_size);
+        vc->container.cop_none.frame.tfdz = (uint8_t*) vc->uslp->mem._alloc(config->tfdz_max_size);
         assert(vc->container.cop_none.frame.tfdz);
     } else if (config->cop_type == COP_1) {
         cop1_config_t cfg = {0};
@@ -62,6 +62,7 @@ void vc_init(uslp_core_t* uslp, vc_t* vc, mc_t* mc, const vc_config_t* config) {
 typedef struct {
     size_t tfdz_capacity;
     int map_id;
+    map_type_t map_type;
 } map_config_t;
 
 void map_init(uslp_core_t* uslp, map_t* map, vc_t* vc, const map_config_t* config) {
@@ -70,9 +71,21 @@ void map_init(uslp_core_t* uslp, map_t* map, vc_t* vc, const map_config_t* confi
 
     map->uslp = uslp;
     map->map_id = config->map_id;
+    map->map_type = config->map_type;
+
+    if (map->map_type == MAP_TYPE_ACCESS) {
+        map->tfdz_rule = TFDZ_RULE_MAPA_START;
+        map->upid = UPID_MAPA;
+    } else if (map->map_type == MAP_TYPE_PACKET) {
+        map->tfdz_rule = TFDZ_RULE_MAPP_SPAN;
+        map->upid = UPID_SP_OR_EP;
+    } else { // map->map_type == MAP_TYPE_OCTET
+        map->tfdz_rule = TFDZ_RULE_MAP_OCTET;
+        map->upid = UPID_OCTET;
+    } 
+
 
     map->tfdf.capacity = config->tfdz_capacity;
-    map->tfdf.size = config->tfdz_capacity;
     map->tfdf.data = (uint8_t*)map->uslp->mem._alloc(map->tfdf.capacity);
 
     assert(map->tfdf.data != 0);

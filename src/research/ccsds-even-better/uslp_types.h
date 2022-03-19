@@ -64,12 +64,46 @@ typedef struct {
     size_t index;
 } buffer_t;
 
+typedef enum {
+    MAP_TYPE_ACCESS,
+    MAP_TYPE_PACKET,
+    MAP_TYPE_OCTET,    
+} map_type_t;
+
+typedef enum {
+    TFDZ_RULE_MAPP_SPAN = 0b000,
+    TFDZ_RULE_MAPA_START = 0b001,
+    TFDZ_RULE_MAPA_CONTINUE = 0b010,
+    TFDZ_RULE_MAP_OCTET = 0b011,
+    TFDZ_RULE_MAPAV_START = 0b100,
+    TFDZ_RULE_MAPAV_CONTINUE = 0b101,
+    TFDZ_RULE_MAPAV_LAST = 0b110,
+    TDFZ_RULE_MAPAV_NO_SEGM = 0b111,
+} tfdz_rule_t;
+
+typedef enum {
+    UPID_SP_OR_EP = 0b00000,
+    UPID_COP1 = 0b00001,
+    UPID_COPP = 0b00010,
+    UPID_SDLS = 0b00011,
+    UPID_OCTET = 0b00100,
+    UPID_MAPA = 0b00101,
+    UPID_PROX1_PPID1 = 0b00110,
+    UPID_PROX1_SPDU = 0b00111,
+    UPID_PROX1_PPID2 = 0b01000,
+    UPID_IDLE = 0b11111,
+} upid_t;
+
 typedef struct map_t {
+    map_type_t map_type;
     mx_node mx;
     uslp_core_t* uslp;
     buffer_t source_buffer;
     buffer_t tfdf;
     uint64_t tfdf_count;
+    tfdz_rule_t tfdz_rule;
+    upid_t upid;
+    uint16_t pointer_fh_lo;
     int map_id;
 } map_t;
 
@@ -78,6 +112,9 @@ typedef struct {
     size_t size;
     int map_id;
     uint64_t map_frame_count;
+    tfdz_rule_t tfdz_rule;
+    upid_t upid;
+    uint16_t pointer_fh_lo;
 } tfdf_t;
 
 
@@ -86,8 +123,12 @@ typedef struct {
     size_t tfdz_size;
     uint64_t vc_frame_count;
     uint64_t map_frame_count;
+    uint64_t mc_frame_count;
+    uint64_t pc_frame_count;
     int map_id;
     int vc_id;
+    int sc_id;
+    int tfvn;
     int ttl;
 } vc_frame_t;
 
