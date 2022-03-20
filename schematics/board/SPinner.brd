@@ -493,7 +493,7 @@ design rules under a new name.</description>
 </element>
 </elements>
 <signals>
-<signal name="BUS+1">
+<signal name="BUS+">
 <contactref element="U$1" pad="1"/>
 <contactref element="U$1" pad="2"/>
 <contactref element="U$1" pad="4"/>
@@ -525,7 +525,7 @@ design rules under a new name.</description>
 <vertex x="80.2738" y="71.8028"/>
 </polygon>
 </signal>
-<signal name="N$2">
+<signal name="BUS-">
 <contactref element="U$2" pad="1"/>
 <contactref element="U$2" pad="2"/>
 <contactref element="U$2" pad="4"/>

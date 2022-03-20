@@ -540,7 +540,7 @@
 <busses>
 </busses>
 <nets>
-<net name="BUS+1" class="0">
+<net name="BUS+" class="0">
 <segment>
 <pinref part="U$1" gate="G$1" pin="P$1"/>
 <wire x1="71.12" y1="71.12" x2="71.12" y2="60.96" width="0.1524" layer="91"/>
@@ -561,7 +561,7 @@
 <junction x="91.44" y="60.96"/>
 </segment>
 </net>
-<net name="N$2" class="0">
+<net name="BUS-" class="0">
 <segment>
 <pinref part="U$2" gate="G$1" pin="P$1"/>
 <wire x1="71.12" y1="40.64" x2="71.12" y2="30.48" width="0.1524" layer="91"/>
@@ -580,7 +580,6 @@
 <label x="101.6" y="30.48" size="1.778" layer="95" rot="R90"/>
 <label x="71.12" y="30.48" size="1.778" layer="95" rot="R90"/>
 <label x="91.44" y="30.48" size="1.778" layer="95" rot="R90"/>
-<label x="83.82" y="30.48" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="CMD" class="0">
