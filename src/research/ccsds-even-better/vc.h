@@ -97,6 +97,7 @@ vc_frame_t* vc_get_frame(vc_t* vc) {
 void vc_release_frame(vc_t* vc) {
     if (vc->cop_type == COP_NONE) {
         vc->container.cop_none.is_full = false;
+        memset(vc->container.cop_none.frame.tfdf.tfdz, 0, vc->container.cop_none.tfdz_size);
     } else if (vc->cop_type == COP_1) {
         cop1_release_frame(&vc->container.cop1);
     } else {
