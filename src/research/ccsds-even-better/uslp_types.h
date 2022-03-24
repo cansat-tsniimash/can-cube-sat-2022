@@ -119,13 +119,10 @@ typedef struct {
 
 
 typedef struct {
-    uint8_t* tfdz;
-    size_t tfdz_size;
+    tfdf_t tfdf;
     uint64_t vc_frame_count;
-    uint64_t map_frame_count;
     uint64_t mc_frame_count;
     uint64_t pc_frame_count;
-    int map_id;
     int vc_id;
     int sc_id;
     int tfvn;

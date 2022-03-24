@@ -23,7 +23,8 @@ void cop1_init(uslp_core_t* uslp, cop1_t* cop, const cop1_config_t* config) {
     cop->arr = queue;
 
     for (size_t i = 0; i < config->queue_size; i++) {
-        queue[i].tfdz = &arr[i * config->tfdz_size];
+        queue[i].tfdf.tfdz = &arr[i * config->tfdz_size];
+        queue[i].tfdf.size = config->tfdz_size;
     }
 }
 
@@ -47,8 +48,8 @@ void vc_init(uslp_core_t* uslp, vc_t* vc, mc_t* mc, const vc_config_t* config) {
     vc->cop_type = config->cop_type;
     if (config->cop_type == COP_NONE) {
         vc->container.cop_none.tfdz_size = config->tfdz_max_size;
-        vc->container.cop_none.frame.tfdz = (uint8_t*) vc->uslp->mem._alloc(config->tfdz_max_size);
-        assert(vc->container.cop_none.frame.tfdz);
+        vc->container.cop_none.frame.tfdf.tfdz = (uint8_t*) vc->uslp->mem._alloc(config->tfdz_max_size);
+        assert(vc->container.cop_none.frame.tfdf.tfdz);
     } else if (config->cop_type == COP_1) {
         cop1_config_t cfg = {0};
         cfg.queue_size = config->cop_queue_count;
@@ -86,7 +87,9 @@ void map_init(uslp_core_t* uslp, map_t* map, vc_t* vc, const map_config_t* confi
 
 
     map->tfdf.capacity = config->tfdz_capacity;
+    map->tfdf.size = config->tfdz_capacity;
     map->tfdf.data = (uint8_t*)map->uslp->mem._alloc(map->tfdf.capacity);
+
 
     assert(map->tfdf.data != 0);
 }

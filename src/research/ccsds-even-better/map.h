@@ -54,7 +54,7 @@ void map_set_source(map_t* map, uint8_t* data, size_t size) {
     }
 }
 
-bool map_pull_tfdf(map_t* map, tfdf_t* tfdf, bool* release_sap) {
+bool map_pull_tfdf(map_t* map, tfdf_t* tfdf, bool* release_sap, bool* release_map) {
     uint8_t* src_begin = map->source_buffer.data + map->source_buffer.index;
     uint8_t* dst_begin = map->tfdf.data + map->tfdf.index;
 
@@ -81,8 +81,23 @@ bool map_pull_tfdf(map_t* map, tfdf_t* tfdf, bool* release_sap) {
         tfdf->pointer_fh_lo = map->pointer_fh_lo;
         tfdf->tfdz_rule = map->tfdz_rule;
         tfdf->upid = map->upid;
+
+        if (map->map_type == MAP_TYPE_ACCESS) {
+            *release_map = true;
+        } else if (map->map_type == MAP_TYPE_PACKET) {
+            *release_map = *release_sap;
+        } else if (map->map_type == MAP_TYPE_OCTET) {
+            *release_map = true;
+        }
         return true;
     } else {
+        if (map->map_type == MAP_TYPE_ACCESS) {
+            *release_map = false;
+        } else if (map->map_type == MAP_TYPE_PACKET) {
+            *release_map = false;
+        } else if (map->map_type == MAP_TYPE_OCTET) {
+            *release_map = true;
+        }
         return false;
     }
 }

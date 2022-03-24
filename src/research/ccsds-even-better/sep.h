@@ -30,7 +30,8 @@ typedef struct {
 } transfer_frame_t;
 
 transfer_frame_t _sep_get_from_mcf(sep_t* sep) {
-
+    transfer_frame_t frame = {0};
+    return frame;
 }
 transfer_frame_t _sep_get_from_vc(sep_t* sep) {
     mx_node* pcmx = &sep->pc->mx;
@@ -42,10 +43,10 @@ transfer_frame_t _sep_get_from_vc(sep_t* sep) {
     vc_t* vc = mx_get_vc(vcmx);
     vc_frame_t* fr = vc_get_frame(vc);
     transfer_frame_t frame = {0};
-    frame.tfdz = fr->tfdz;
-    frame.tfdz_size = fr->tfdz_size;
-    frame.map_frame_count = fr->map_frame_count;
-    frame.map_id = fr->map_id;
+    frame.tfdz = fr->tfdf.tfdz;
+    frame.tfdz_size = fr->tfdf.size;
+    frame.map_frame_count = fr->tfdf.map_frame_count;
+    frame.map_id = fr->tfdf.map_id;
     frame.vc_id = fr->vc_id;
     frame.vc_frame_count = fr->vc_frame_count;
     return frame;
@@ -60,10 +61,7 @@ void _sep_forcing(sep_t* sep) {
     vc_t* vc= mx_get_vc(vcmx);
 
     map_force_finish(map);
-    
-    //pushing it to VC, 
-    //setting ready every channel on the way
-
+    vc_pull_everything_from_bottom(vc);
 }
 
 transfer_frame_t _sep_idle(sep_t* sep) {

@@ -46,27 +46,28 @@ void cop1_release_frame(cop1_t* cop) {
 void vc_save_frame(vc_t* vc, const vc_frame_t* frame) {
     vc_frame_t* frame_to = 0;
     if (vc->cop_type == COP_NONE) {
-        assert(frame->tfdz_size <= vc->container.cop_none.tfdz_size);
+        assert(frame->tfdf.size <= vc->container.cop_none.tfdz_size);
         frame_to = &vc->container.cop_none.frame;
         vc->container.cop_none.is_full = true;
     } else if (vc->cop_type == COP_1) {
-        assert(frame->tfdz_size <= vc->container.cop1.tfdz_max_size);
+        assert(frame->tfdf.size <= vc->container.cop1.tfdz_max_size);
         frame_to = cop1_new_frame(&vc->container.cop1);
     } else {
         assert(0);
     }
-    memcpy(frame_to->tfdz, frame->tfdz, frame->tfdz_size);
-    frame_to->map_frame_count = frame->map_frame_count;
-    frame_to->map_id = frame->map_id;
-    frame_to->tfdz_size = frame->tfdz_size;
+    memcpy(frame_to->tfdf.tfdz, frame->tfdf.tfdz, frame->tfdf.size);
+    uint8_t* tfdz = frame_to->tfdf.tfdz;
+    *frame_to = *frame;
+    frame_to->tfdf.tfdz = tfdz;
 }
 
 vc_frame_t vc_frame_from_tfdf(vc_t* vc, const tfdf_t* tfdf) {
     vc_frame_t frame = {0};
-    frame.map_id = tfdf->map_id;
-    frame.map_frame_count = tfdf->map_frame_count;
-    frame.tfdz = tfdf->tfdz;
-    frame.tfdz_size = tfdf->size;
+    frame.tfdf = *tfdf;
+    
+    frame.vc_id = vc->vc_id;
+    frame.vc_frame_count = vc->frame_count;
+    
     return frame;
 }
 
