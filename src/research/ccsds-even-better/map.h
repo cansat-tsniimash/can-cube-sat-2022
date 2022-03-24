@@ -90,6 +90,15 @@ bool map_pull_tfdf(map_t* map, tfdf_t* tfdf, bool* release_sap, bool* release_ma
             *release_map = true;
         }
         return true;
+    } else if (map->tfdf.index == 0) {
+        if (map->map_type == MAP_TYPE_ACCESS) {
+            *release_map = true;
+        } else if (map->map_type == MAP_TYPE_PACKET) {
+            *release_map = true;
+        } else if (map->map_type == MAP_TYPE_OCTET) {
+            *release_map = true;
+        }
+        return false;
     } else {
         if (map->map_type == MAP_TYPE_ACCESS) {
             *release_map = false;
