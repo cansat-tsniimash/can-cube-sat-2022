@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "uslp_init.h"
 
@@ -45,13 +46,18 @@ int main() {
     uint8_t data[] = "Hello World! What a beautiful day outside! Birds are singing, flowers are flowering...";
     sap_send(&sap, data, sizeof(data));
     size_t end_size = 0;
+#define Period 1 //ms
+    time_t prev = time(0) - Period;
     while (1) {
+            
         uint8_t end_data[100] = {0};
-        end_size = sep_get_data(&sep, end_data, sizeof(end_data), false);
+        end_size = sep_get_data(&sep, end_data, sizeof(end_data), true);
         if (end_size == 0) {
             break;
         }
         printf("%s\n", end_data);
+        
+        
     } 
 
 }

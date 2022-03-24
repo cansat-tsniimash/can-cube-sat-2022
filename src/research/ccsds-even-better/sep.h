@@ -27,6 +27,12 @@ typedef struct {
     int vc_id;
     int sc_id;
     int tfvn;
+    
+    tfdz_rule_t tfdz_rule;
+    upid_t upid;
+    uint16_t pointer_fh_lo;
+
+    
 } transfer_frame_t;
 
 transfer_frame_t _sep_get_from_mcf(sep_t* sep) {
