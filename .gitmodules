@@ -1,9 +1,9 @@
 [submodule "src/common/mavlink/pymavlink"]
 	path = src/common/mavlink/pymavlink
-	url = https://github.com/CONZERN-ITS/pymavlink
+	url = ../pymavlink
 [submodule "src/common/esp-idf"]
 	path = src/common/esp-idf
 	url = https://github.com/espressif/esp-idf.git
 [submodule "src/common/mavlink"]
 	path = src/common/mavlink
-	url = git@github.com:cansat-tsniimash/mavlink.git
+	url = ../mavlink.git
