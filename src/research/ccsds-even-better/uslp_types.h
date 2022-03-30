@@ -131,6 +131,8 @@ typedef struct {
 typedef struct {
     uint64_t vc_frame_count;
     int vc_id;
+    bool frame_trancated;
+    bool contains_protocol_control_commands;
 } vc_data_t;
 
 typedef struct {
@@ -191,6 +193,7 @@ typedef struct mc_t {
 typedef struct {
     uint8_t ocf[4];
     int sc_id;
+    bool sc_id_is_destination;
     int tfvn;
     bool ocf_valid;
     uint64_t frame_count;

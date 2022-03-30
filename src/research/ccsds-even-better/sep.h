@@ -7,6 +7,7 @@
 #include "map.h"
 #include "mc.h"
 #include "pc.h"
+#include "endian2.h"
  
 typedef struct {
     uslp_core_t* uslp;
@@ -63,7 +64,7 @@ void _sep_forcing(sep_t* sep) {
 }
 
 transfer_frame_t _sep_idle(sep_t* sep) {
-    assert(0 && "Not implemented");
+    assert(0 && "Idle frame is not implemented");
     int a = 5;
     transfer_frame_t fr = {0};
     return fr;
@@ -112,18 +113,42 @@ transfer_frame_t _sep_get_transfer_frame(sep_t* sep) {
     return frame;
 }
 
-size_t _sep_parse_transfer_frame(const transfer_frame_t* frame, uint8_t* data, size_t size) {
-    uint8_t* ptr = data;
-    uint8_t* end = data + size;
-    if ((size_t)(end - ptr) < frame->map_data.tfdf.size) {
-        return 0;
-    }
-    memcpy(ptr, frame->map_data.tfdf.tfdz, frame->map_data.tfdf.size);
-    ptr += frame->map_data.tfdf.size;
-    snprintf((char*)ptr, ptr - data, " %d %d %d", 
-            frame->map_data.tfdf.map_id, frame->vc_data.vc_id, (int)frame->vc_data.vc_frame_count);
+size_t _sep_serialize_transfer_frame(const transfer_frame_t* frame, uint8_t* data, size_t size) {
+    bit_array_t ba = {0};
+    ba.ptr = data;
+    ba.bit_start = 0;
+    ba.bit_end = size * 8;
 
-    return ptr - data;
+	ccsds_insert(&ba, &frame->mc_data.tfvn, 4);
+	ccsds_insert(&ba, &frame->mc_data.sc_id, 16);
+	ccsds_insert(&ba, &frame->mc_data.sc_id_is_destination, 1);
+	ccsds_insert(&ba, &frame->vc_data.vc_id, 6);
+	ccsds_insert(&ba, &frame->map_data.tfdf.map_id, 4);
+    {
+        uint8_t eofph_flag = frame->vc_data.frame_trancated ? 1 : 0;
+        ccsds_insert(&ba, &eofph_flag, 1);
+    }
+    if (!frame->vc_data.frame_trancated) {
+		ccsds_insert(&ba, &size, 16);
+        {
+            uint8_t bsc_flag = frame->map_data.qos == QOS_EXPEDITED ? 1 : 0;
+		    ccsds_insert(&ba, &bsc_flag, 1);
+        }
+        {
+            uint8_t pcc_flag = frame->vc_data.contains_protocol_control_commands ? 1 : 0;
+		    ccsds_insert(&ba, &pcc_flag, 1);
+        }
+        {
+            uint8_t reserve = 0;
+            ccsds_insert(&ba, &reserve, 2);
+        }
+        {
+		ccsds_insert(&ba, &mc_params->ocfp_flag, 1);
+		ccsds_insert(&ba, &vc_params->vcf_count_length, 3);
+		ccsds_insert(&ba, &vc_params->vcf_count, 8 * (vc_params->vcf_count_length));
+	}
+
+    return (ba.bit_start + 7) / 8;
 }
 
 void _sep_pop_transfer_frame(sep_t* sep) {
@@ -148,7 +173,7 @@ size_t sep_get_data(sep_t* sep, uint8_t* buffer, size_t size, bool forced) {
         return 0;
     }
     transfer_frame_t frame = _sep_get_transfer_frame(sep);
-    size_t count = _sep_parse_transfer_frame(&frame, buffer, size);
+    size_t count = _sep_serialize_transfer_frame(&frame, buffer, size);
     _sep_pop_transfer_frame(sep);
     return count;
 }
