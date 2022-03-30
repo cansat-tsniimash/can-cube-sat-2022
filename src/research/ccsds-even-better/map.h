@@ -54,7 +54,9 @@ void map_set_source(map_t* map, uint8_t* data, size_t size) {
     }
 }
 
-bool map_pull_tfdf(map_t* map, tfdf_t* tfdf, bool* release_sap, bool* release_map) {
+bool map_pull_data(map_t* map, map_data_t* md, bool* release_sap, bool* release_map) {
+    tfdf_t* tfdf = &md->tfdf;
+
     uint8_t* src_begin = map->source_buffer.data + map->source_buffer.index;
     uint8_t* dst_begin = map->tfdf.data + map->tfdf.index;
 
@@ -76,7 +78,8 @@ bool map_pull_tfdf(map_t* map, tfdf_t* tfdf, bool* release_sap, bool* release_ma
     if (map->tfdf.index == map->tfdf.size) {
         tfdf->tfdz = map->tfdf.data;
         tfdf->size = map->tfdf.size;
-        tfdf->map_frame_count = map->tfdf_count;
+        md->frame_count = map->tfdf_count;
+        md->qos = map->qos;
         tfdf->map_id = map->map_id;
         tfdf->pointer_fh_lo = map->pointer_fh_lo;
         tfdf->tfdz_rule = map->tfdz_rule;

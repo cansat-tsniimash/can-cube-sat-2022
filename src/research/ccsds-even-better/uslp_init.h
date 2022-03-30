@@ -1,6 +1,6 @@
 #pragma once
 
-#include "uslp_socket.h"
+#include "sap.h"
 #include "sep.h"
 
 typedef struct {
@@ -23,8 +23,8 @@ void cop1_init(uslp_core_t* uslp, cop1_t* cop, const cop1_config_t* config) {
     cop->arr = queue;
 
     for (size_t i = 0; i < config->queue_size; i++) {
-        queue[i].tfdf.tfdz = &arr[i * config->tfdz_size];
-        queue[i].tfdf.size = config->tfdz_size;
+        queue[i].map_data.tfdf.tfdz = &arr[i * config->tfdz_size];
+        queue[i].map_data.tfdf.size = config->tfdz_size;
     }
 }
 
@@ -43,13 +43,14 @@ typedef struct {
 void vc_init(uslp_core_t* uslp, vc_t* vc, mc_t* mc, const vc_config_t* config) {
     mx_vc_init(vc, mc);
     vc->uslp = uslp;
-    vc->frame_count = 0;
+    vc->sc_frame_count = 0;
+    vc->ex_frame_count = 0;
     vc->vc_id = config->vc_id;
     vc->cop_type = config->cop_type;
     if (config->cop_type == COP_NONE) {
-        vc->container.cop_none.tfdz_size = config->tfdz_max_size;
-        vc->container.cop_none.frame.tfdf.tfdz = (uint8_t*) vc->uslp->mem._alloc(config->tfdz_max_size);
-        assert(vc->container.cop_none.frame.tfdf.tfdz);
+        vc->container.expedited_frame.tfdz_size = config->tfdz_max_size;
+        vc->container.expedited_frame.frame.map_data.tfdf.tfdz = (uint8_t*) vc->uslp->mem._alloc(config->tfdz_max_size);
+        assert(vc->container.expedited_frame.frame.map_data.tfdf.tfdz);
     } else if (config->cop_type == COP_1) {
         cop1_config_t cfg = {0};
         cfg.queue_size = config->cop_queue_count;
@@ -120,13 +121,15 @@ void sap_init(uslp_core_t* uslp, sap_t* sap, map_t* map, const sap_config_t* con
 
 
 typedef struct {
-    int mc_id;
+    int sc_id;
+    int tfvn;
 } mc_config_t;
 
 void mc_init(uslp_core_t* uslp, mc_t* mc, pc_t* pc, const mc_config_t* config) {
     mx_mc_init(mc, pc);
 
-    mc->mc_id = config->mc_id;
+    mc->sc_id = config->sc_id;
+    mc->tfvn = config->tfvn;
 }
 
 typedef struct {

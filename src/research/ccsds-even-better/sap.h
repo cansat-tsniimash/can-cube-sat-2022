@@ -36,7 +36,7 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
     mx_node* mcmx = mx_get_parent(vcmx);
  
     
-    tfdf_t tfdf = {0};
+    map_data_t md = {0};
     bool release_sap = false;
     bool release_map = false;
     while (true) {
@@ -47,23 +47,23 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
         }
         map_t* map = mx_get_map(mapmx);
         sap_t* sap = 0;
-        bool tfdf_legit = false;
+        bool md_legit = false;
         // Получаем sap канал с данными
         mx_node* sapmx = mx_current_updated(mapmx);
         if (sapmx != 0) {
             sap = mx_get_sap(sapmx);
             map_set_source(map, sap->data.data, sap->data.size);
         }
-        // Получаем данные из map канала. Если sap нету, то он выдаст tfdf, если он есть,
+        // Получаем данные из map канала. Если sap нету, то он выдаст md, если он есть,
         // и не выдаст, если его нет. 
-        // tfdf_legit - переменная tfdf содержит в себе tfdf.
+        // md_legit - переменная md содержит в себе md.
         // release_sap - означает, что sap израсходован, там больше нет данных и его можно очистить,
         // и выкинуть из очередей
         // release_map - означает, что нам разрешено отпустить map.
-        tfdf_legit = map_pull_tfdf(map, &tfdf, &release_sap, &release_map);
+        md_legit = map_pull_data(map, &md, &release_sap, &release_map);
 
         // У нас есть какие-то данные. Удостоверимся, что все вершины есть в очередях.
-        if (!release_sap || !release_map || tfdf_legit) {
+        if (!release_sap || !release_map || md_legit) {
             mx_try_push_to_parent_updated(mapmx);
             mx_try_push_to_parent_updated(vcmx);
             mx_try_push_to_parent_updated(mcmx);
@@ -76,18 +76,20 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
         }
 
         // Данных map не дает, и не остпускает. Всё.
-        if (!release_map && !tfdf_legit) {
+        if (!release_map && !md_legit) {
             return;
         }
-        // А если tfdf у нас есть, то попроуем закинуть в VC
-        if (tfdf_legit) {
-            // Аха!!! VC полон, мы не можем закинуть tfdf.
-            if (vc_is_full(vc)) {
+        // А если md у нас есть, то попроуем закинуть в VC
+        if (md_legit) {
+            // Аха!!! VC полон, мы не можем закинуть md.
+            if (md.qos == QOS_EXPEDITED && vc_is_full_expedited(vc) ||
+                md.qos == QOS_SEQ_CTRLD && vc_is_full_seq_ctrld(vc)) 
+            {
                 return;
             }
             // Сохраняем его, обновляем очереди готовности
-            vc_frame_t frame = vc_frame_from_tfdf(vc, &tfdf);
-            vc_save_frame(vc, &frame);
+            vc_push_new_frame(vc, &md);
+            
             if (!mx_is_in_ready(vcmx)) {
                 mx_remove_from_parent_updated(vcmx);
                 mx_push_to_parent_ready(vcmx);
@@ -107,7 +109,7 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
         // то он снова станет текущим в очереди.
         if (release_map) {
             mx_remove_from_parent_updated(mapmx);
-            if (!release_sap || tfdf_legit || mx_current_updated(mapmx)) {
+            if (!release_sap || md_legit || mx_current_updated(mapmx)) {
                 mx_push_to_parent_updated(mapmx);
             }
         }

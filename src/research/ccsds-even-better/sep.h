@@ -5,7 +5,9 @@
 #include "uslp_mx.h"
 #include <stdio.h>
 #include "map.h"
-
+#include "mc.h"
+#include "pc.h"
+ 
 typedef struct {
     uslp_core_t* uslp;
     pc_t* pc;
@@ -16,23 +18,10 @@ typedef struct {
 } sep_t;
 
 typedef struct {
-    size_t tfdz_size;
-    
-    uint8_t* tfdz;
-    uint64_t vc_frame_count;
-    uint64_t map_frame_count;
-    uint64_t mc_frame_count;
-    uint64_t pc_frame_count;
-    int map_id;
-    int vc_id;
-    int sc_id;
-    int tfvn;
-    
-    tfdz_rule_t tfdz_rule;
-    upid_t upid;
-    uint16_t pointer_fh_lo;
-
-    
+    map_data_t map_data;
+    vc_data_t vc_data;
+    mc_data_t mc_data;
+    pc_data_t pc_data;
 } transfer_frame_t;
 
 transfer_frame_t _sep_get_from_mcf(sep_t* sep) {
@@ -47,14 +36,17 @@ transfer_frame_t _sep_get_from_vc(sep_t* sep) {
     pc_t* pc = mx_get_pc(pcmx);
     mc_t* mc = mx_get_mc(mcmx);
     vc_t* vc = mx_get_vc(vcmx);
+    
     vc_frame_t* fr = vc_get_frame(vc);
+
     transfer_frame_t frame = {0};
-    frame.tfdz = fr->tfdf.tfdz;
-    frame.tfdz_size = fr->tfdf.size;
-    frame.map_frame_count = fr->tfdf.map_frame_count;
-    frame.map_id = fr->tfdf.map_id;
-    frame.vc_id = fr->vc_id;
-    frame.vc_frame_count = fr->vc_frame_count;
+
+
+    frame.map_data = fr->map_data;
+    frame.vc_data = fr->vc_data;
+    frame.mc_data = mc_get_data(mc);
+    frame.pc_data = pc_get_data(pc);
+
     return frame;
 }
 
@@ -123,22 +115,31 @@ transfer_frame_t _sep_get_transfer_frame(sep_t* sep) {
 size_t _sep_parse_transfer_frame(const transfer_frame_t* frame, uint8_t* data, size_t size) {
     uint8_t* ptr = data;
     uint8_t* end = data + size;
-    if ((size_t)(end - ptr) < frame->tfdz_size) {
+    if ((size_t)(end - ptr) < frame->map_data.tfdf.size) {
         return 0;
     }
-    memcpy(ptr, frame->tfdz, frame->tfdz_size);
-    ptr += frame->tfdz_size;
-    snprintf((char*)ptr, ptr - data, " %d %d %d", frame->map_id, frame->vc_id, (int)frame->vc_frame_count);
+    memcpy(ptr, frame->map_data.tfdf.tfdz, frame->map_data.tfdf.size);
+    ptr += frame->map_data.tfdf.size;
+    snprintf((char*)ptr, ptr - data, " %d %d %d", 
+            frame->map_data.tfdf.map_id, frame->vc_data.vc_id, (int)frame->vc_data.vc_frame_count);
 
     return ptr - data;
 }
 
 void _sep_pop_transfer_frame(sep_t* sep) {
     if (sep->path.vc != 0) {
-        vc_release_frame(sep->path.vc);
-        mx_remove_from_parent_ready(&sep->path.vc->mx);
-        mx_remove_from_parent_ready(&sep->path.mc->mx);
-        vc_pull_everything_from_bottom(sep->path.vc);
+        
+        pc_t* pc = sep->pc;
+        mc_t* mc = sep->path.mc;
+        vc_t* vc = sep->path.vc;
+
+        mc_pop_data(mc);
+        pc_pop_data(pc);
+        vc_release_frame(vc);
+
+        mx_remove_from_parent_ready(&vc->mx);
+        mx_remove_from_parent_ready(&mc->mx);
+        vc_pull_everything_from_bottom(vc);
     }
 }
 

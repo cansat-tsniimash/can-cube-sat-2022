@@ -43,64 +43,66 @@ void cop1_release_frame(cop1_t* cop) {
 }
 
 
-void vc_save_frame(vc_t* vc, const vc_frame_t* frame) {
+void vc_push_new_frame(vc_t* vc, const map_data_t* md) {
+    
     vc_frame_t* frame_to = 0;
-    if (vc->cop_type == COP_NONE) {
-        assert(frame->tfdf.size <= vc->container.cop_none.tfdz_size);
-        frame_to = &vc->container.cop_none.frame;
-        vc->container.cop_none.is_full = true;
+    if (vc->cop_type == COP_NONE || md->qos == QOS_EXPEDITED) {
+        assert(md->tfdf.size <= vc->container.expedited_frame.tfdz_size);
+        vc->container.expedited_frame.is_full = true;
+        frame_to = &vc->container.expedited_frame.frame;
+
+        frame_to->ttl = 0;
+        frame_to->vc_data.vc_frame_count = vc->ex_frame_count++;
     } else if (vc->cop_type == COP_1) {
-        assert(frame->tfdf.size <= vc->container.cop1.tfdz_max_size);
+        assert(md->tfdf.size <= vc->container.cop1.tfdz_max_size);
         frame_to = cop1_new_frame(&vc->container.cop1);
+
+        frame_to->ttl = vc->seq_ctrld_ttl;
+        frame_to->vc_data.vc_frame_count = vc->sc_frame_count++;
     } else {
-        assert(0);
+        assert(0 && "Other cops are not implemented");
     }
-    memcpy(frame_to->tfdf.tfdz, frame->tfdf.tfdz, frame->tfdf.size);
-    uint8_t* tfdz = frame_to->tfdf.tfdz;
-    *frame_to = *frame;
-    frame_to->tfdf.tfdz = tfdz;
+    memcpy(frame_to->map_data.tfdf.tfdz, md->tfdf.tfdz, md->tfdf.size);
+    uint8_t* tfdz = frame_to->map_data.tfdf.tfdz;
+    frame_to->map_data = *md;
+    frame_to->map_data.tfdf.tfdz = tfdz;
+
+    frame_to->vc_data.vc_id = vc->vc_id;
 }
 
-vc_frame_t vc_frame_from_tfdf(vc_t* vc, const tfdf_t* tfdf) {
-    vc_frame_t frame = {0};
-    frame.tfdf = *tfdf;
-    
-    frame.vc_id = vc->vc_id;
-    frame.vc_frame_count = vc->frame_count;
-    
-    return frame;
+bool vc_is_full_expedited(vc_t* vc) {
+    return vc->container.expedited_frame.is_full;
 }
 
 
-bool vc_is_full(vc_t* vc) {
-    if (vc->cop_type == COP_NONE) {
-        return vc->container.cop_none.is_full;
-    } else if (vc->cop_type == COP_1) {
+bool vc_is_full_seq_ctrld(vc_t* vc) {
+    if (vc->cop_type == COP_1) {
         return cop1_is_full(&vc->container.cop1);
     } else {
         assert(0);
-        return true;
+        abort();
     }
 }
 
 vc_frame_t* vc_get_frame(vc_t* vc) { 
-    if (vc->cop_type == COP_NONE) {
-        assert(vc->container.cop_none.is_full);
-        return &vc->container.cop_none.frame;
+    if (vc->container.expedited_frame.is_full) {
+        return &vc->container.expedited_frame.frame;
     } else if (vc->cop_type == COP_1) {
         return cop1_get_next(&vc->container.cop1);
     } else {
         assert(0);
-        return 0;
+        abort();
     }
 }
 void vc_release_frame(vc_t* vc) {
-    if (vc->cop_type == COP_NONE) {
-        vc->container.cop_none.is_full = false;
-        memset(vc->container.cop_none.frame.tfdf.tfdz, 0, vc->container.cop_none.tfdz_size);
+    if (vc->container.expedited_frame.is_full) {
+        vc->container.expedited_frame.is_full = false;
+        //TODO: Следующая строка в готовой версии будет не нужна
+        memset(vc->container.expedited_frame.frame.map_data.tfdf.tfdz, 0, vc->container.expedited_frame.tfdz_size);
     } else if (vc->cop_type == COP_1) {
         cop1_release_frame(&vc->container.cop1);
     } else {
         assert(0);
+        abort();
     }
 }

@@ -94,6 +94,11 @@ typedef enum {
     UPID_IDLE = 0b11111,
 } upid_t;
 
+typedef enum {
+    QOS_EXPEDITED,
+    QOS_SEQ_CTRLD
+} qos_t;
+
 typedef struct map_t {
     map_type_t map_type;
     mx_node mx;
@@ -103,6 +108,7 @@ typedef struct map_t {
     uint64_t tfdf_count;
     tfdz_rule_t tfdz_rule;
     upid_t upid;
+    qos_t qos;
     uint16_t pointer_fh_lo;
     int map_id;
 } map_t;
@@ -111,21 +117,25 @@ typedef struct {
     uint8_t* tfdz;
     size_t size;
     int map_id;
-    uint64_t map_frame_count;
     tfdz_rule_t tfdz_rule;
     upid_t upid;
     uint16_t pointer_fh_lo;
 } tfdf_t;
 
-
 typedef struct {
     tfdf_t tfdf;
+    uint64_t frame_count;
+    qos_t qos;
+} map_data_t;
+ 
+typedef struct {
     uint64_t vc_frame_count;
-    uint64_t mc_frame_count;
-    uint64_t pc_frame_count;
     int vc_id;
-    int sc_id;
-    int tfvn;
+} vc_data_t;
+
+typedef struct {
+    map_data_t map_data;
+    vc_data_t vc_data;
     int ttl;
 } vc_frame_t;
 
@@ -149,23 +159,42 @@ typedef struct {
 typedef struct vc_t {
     mx_node mx;
     uslp_core_t* uslp; 
-    uint64_t frame_count; 
+    uint64_t ex_frame_count;
+    uint64_t sc_frame_count;  
     int vc_id;
     cop_enum_t cop_type; 
-    union {
-        cop1_t cop1;
+    int seq_ctrld_ttl;
+    
+    struct {
         struct {
             vc_frame_t frame; 
             bool is_full;
             size_t tfdz_size;
-        } cop_none;
+        } expedited_frame;
+        
+        union {
+            cop1_t cop1;
+            int copp; // TODO: copp struct
+        } ;
     } container;
 } vc_t;
 
 typedef struct mc_t {
     mx_node mx;
-    int mc_id;
+    int sc_id;
+    int tfvn;
+    uint64_t frame_count;
 } mc_t;
+
+
+
+typedef struct {
+    uint8_t ocf[4];
+    int sc_id;
+    int tfvn;
+    bool ocf_valid;
+    uint64_t frame_count;
+} mc_data_t;
 
 typedef struct {
     mc_t* start;
@@ -208,4 +237,16 @@ typedef struct sap_t {
 typedef struct {
     mx_node mx;
     mc_t* mc_idle;
+    uint64_t frame_count;
+    uint8_t* insert_data; 
+    size_t insert_size;
 } pc_t;
+
+
+typedef struct {
+    uint8_t* insert_data;
+    size_t insert_size;
+    uint8_t fec[4];
+    bool fec_valid;
+} pc_data_t;
+

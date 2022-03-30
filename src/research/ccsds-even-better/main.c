@@ -25,7 +25,8 @@ int main() {
     vc_config.cop_queue_count = 1;
     
     mc_config_t mc_config = {0};
-    mc_config.mc_id = 8347;
+    mc_config.sc_id = 8347;
+    mc_config.tfvn = 1;
     
     pc_config_t pc_config = {0};
 
