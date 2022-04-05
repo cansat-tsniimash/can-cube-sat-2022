@@ -30,7 +30,7 @@ void _map_octet_set_empty(uint8_t* data, size_t size) {
 
 void map_force_finish(map_t* map) {
     if (map->map_type == MAP_TYPE_ACCESS) {
-        //nothing to do
+        assert(0 && "No, you cannot force MAPA");
     } else if (map->map_type == MAP_TYPE_PACKET) {
         epp_set_empty_packet(map->tfdf.data + map->tfdf.index, map->tfdf.size - map->tfdf.index);
     } else {

@@ -63,7 +63,9 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
         md_legit = map_pull_data(map, &md, &release_sap, &release_map);
 
         // У нас есть какие-то данные. Удостоверимся, что все вершины есть в очередях.
-        if (!release_sap || !release_map || md_legit) {
+        // Особый случай с MAPA, так как он не может отдавать данные по частям,
+        // поэтому мы не имеем право насильно просить TFDF
+        if ((!release_sap || !release_map || md_legit) && map->map_type != MAP_TYPE_ACCESS) {
             mx_try_push_to_parent_updated(mapmx);
             mx_try_push_to_parent_updated(vcmx);
             mx_try_push_to_parent_updated(mcmx);
@@ -81,14 +83,12 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
         }
         // А если md у нас есть, то попроуем закинуть в VC
         if (md_legit) {
-            // Аха!!! VC полон, мы не можем закинуть md.
-            if (md.qos == QOS_EXPEDITED && vc_is_full_expedited(vc) ||
-                md.qos == QOS_SEQ_CTRLD && vc_is_full_seq_ctrld(vc)) 
-            {
+            if (!vc_push_new_frame(vc, &md)) {
+                // Аха!!! VC полон, мы не можем закинуть md.
                 return;
             }
-            // Сохраняем его, обновляем очереди готовности
-            vc_push_new_frame(vc, &md);
+            // Обновляем очереди готовности
+            
             
             if (!mx_is_in_ready(vcmx)) {
                 mx_remove_from_parent_updated(vcmx);

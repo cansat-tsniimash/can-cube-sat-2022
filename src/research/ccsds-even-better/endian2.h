@@ -9,9 +9,9 @@ typedef struct {
     size_t bit_end;
 } bit_array_t;
 
-
+ 
 void ccsds_insert(bit_array_t* ba, void* var, size_t bitcount) {
-    ccsds_endian_insert(ba->ptr, ba->end, ba->bit_start, var, bitcount);
+    ccsds_endian_insert(ba->ptr, ba->bit_end, ba->bit_start, var, bitcount);
     ba->bit_start += bitcount;
 }
 int ccsds_extract(bit_array_t* ba, void* var, size_t bitcount) {

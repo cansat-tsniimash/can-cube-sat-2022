@@ -18,12 +18,6 @@ typedef struct {
     } path;
 } sep_t;
 
-typedef struct {
-    map_data_t map_data;
-    vc_data_t vc_data;
-    mc_data_t mc_data;
-    pc_data_t pc_data;
-} transfer_frame_t;
 
 transfer_frame_t _sep_get_from_mcf(sep_t* sep) {
     transfer_frame_t frame = {0};
@@ -119,36 +113,62 @@ size_t _sep_serialize_transfer_frame(const transfer_frame_t* frame, uint8_t* dat
     ba.bit_start = 0;
     ba.bit_end = size * 8;
 
-	ccsds_insert(&ba, &frame->mc_data.tfvn, 4);
+    uint8_t sod_flag = frame->mc_data.sc_id_is_destination ? 1 : 0;
+    uint8_t eofph_flag = frame->vc_data.frame_trancated ? 1 : 0;
+    uint8_t bsc_flag = frame->map_data.qos == QOS_EXPEDITED ? 1 : 0;
+    uint8_t pcc_flag = frame->vc_data.contains_protocol_control_commands ? 1 : 0;
+    uint8_t reserve = 0;
+    uint8_t ocfp_flag = frame->mc_data.ocf_valid ? 1 : 0;
+
+
+	ccsds_insert(&ba, &frame->pc_data.tfvn, 4);
 	ccsds_insert(&ba, &frame->mc_data.sc_id, 16);
-	ccsds_insert(&ba, &frame->mc_data.sc_id_is_destination, 1);
+	ccsds_insert(&ba, &sod_flag, 1);
 	ccsds_insert(&ba, &frame->vc_data.vc_id, 6);
 	ccsds_insert(&ba, &frame->map_data.tfdf.map_id, 4);
-    {
-        uint8_t eofph_flag = frame->vc_data.frame_trancated ? 1 : 0;
-        ccsds_insert(&ba, &eofph_flag, 1);
-    }
+    ccsds_insert(&ba, &eofph_flag, 1);
+    
     if (!frame->vc_data.frame_trancated) {
 		ccsds_insert(&ba, &size, 16);
-        {
-            uint8_t bsc_flag = frame->map_data.qos == QOS_EXPEDITED ? 1 : 0;
-		    ccsds_insert(&ba, &bsc_flag, 1);
-        }
-        {
-            uint8_t pcc_flag = frame->vc_data.contains_protocol_control_commands ? 1 : 0;
-		    ccsds_insert(&ba, &pcc_flag, 1);
-        }
-        {
-            uint8_t reserve = 0;
-            ccsds_insert(&ba, &reserve, 2);
-        }
-        {
-		ccsds_insert(&ba, &mc_params->ocfp_flag, 1);
-		ccsds_insert(&ba, &vc_params->vcf_count_length, 3);
-		ccsds_insert(&ba, &vc_params->vcf_count, 8 * (vc_params->vcf_count_length));
+		ccsds_insert(&ba, &bsc_flag, 1);
+		ccsds_insert(&ba, &pcc_flag, 1);
+        ccsds_insert(&ba, &reserve, 2);
+        
+		ccsds_insert(&ba, &ocfp_flag, 1);
+		ccsds_insert(&ba, &frame->vc_data.vc_frame_count_length, 3);
+		ccsds_insert(&ba, &frame->vc_data.vc_frame_count, 8 * (frame->vc_data.vc_frame_count_length));
 	}
 
-    return (ba.bit_start + 7) / 8;
+    
+	// Insert zone
+    memcpy(ba.ptr + ba.bit_start / 8, frame->pc_data.insert_data, frame->pc_data.insert_size);
+    ba.bit_start += 8 * frame->pc_data.insert_size;
+	
+
+	//TFDF
+    ccsds_insert(&ba, &frame->map_data.tfdf.tfdz_rule, 3);
+    ccsds_insert(&ba, &frame->map_data.tfdf.upid, 5);
+
+	if (frame->map_data.tfdf.tfdz_rule <= 3) {
+		ccsds_insert(&ba, &frame->map_data.tfdf.pointer_fh_lo, 16);
+	}
+    memcpy(&ba.ptr + ba.bit_start / 8, frame->map_data.tfdf.tfdz, frame->map_data.tfdf.size);
+    ba.bit_start += 8 * frame->map_data.tfdf.size;
+	
+
+	//OCF
+	if (frame->mc_data.ocf_valid) {
+		memcpy(&ba.ptr + ba.bit_start / 8, frame->mc_data.ocf, 4);
+		ba.bit_start += 32;
+	}
+
+	//FEC
+	if (frame->pc_data.use_fec) {
+        uint16_t fec_crc = calc_crc(data, ba.bit_start / 8);
+        ccsds_insert(&ba, &fec_crc, 16);
+	}
+
+    return ba.bit_start / 8;
 }
 
 void _sep_pop_transfer_frame(sep_t* sep) {

@@ -65,6 +65,11 @@ typedef struct {
 } buffer_t;
 
 typedef enum {
+    PVN_SP = 0,
+    PVN_EP = 7
+} pvn_t;
+
+typedef enum {
     MAP_TYPE_ACCESS,
     MAP_TYPE_PACKET,
     MAP_TYPE_OCTET,    
@@ -130,6 +135,7 @@ typedef struct {
  
 typedef struct {
     uint64_t vc_frame_count;
+    uint8_t vc_frame_count_length;
     int vc_id;
     bool frame_trancated;
     bool contains_protocol_control_commands;
@@ -162,7 +168,9 @@ typedef struct vc_t {
     mx_node mx;
     uslp_core_t* uslp; 
     uint64_t ex_frame_count;
-    uint64_t sc_frame_count;  
+    uint64_t sc_frame_count; 
+    uint8_t ex_frame_count_length;
+    uint8_t sc_frame_count_length;  
     int vc_id;
     cop_enum_t cop_type; 
     int seq_ctrld_ttl;
@@ -184,7 +192,9 @@ typedef struct vc_t {
 typedef struct mc_t {
     mx_node mx;
     int sc_id;
-    int tfvn;
+    bool sc_id_is_destination;
+    bool ocf_is_used;
+    uint8_t ocf[4];
     uint64_t frame_count;
 } mc_t;
 
@@ -194,7 +204,6 @@ typedef struct {
     uint8_t ocf[4];
     int sc_id;
     bool sc_id_is_destination;
-    int tfvn;
     bool ocf_valid;
     uint64_t frame_count;
 } mc_data_t;
@@ -240,16 +249,26 @@ typedef struct sap_t {
 typedef struct {
     mx_node mx;
     mc_t* mc_idle;
+    int tfvn;
     uint64_t frame_count;
     uint8_t* insert_data; 
     size_t insert_size;
+    bool is_fec_presented;
+    int tfvn;
 } pc_t;
 
 
 typedef struct {
     uint8_t* insert_data;
     size_t insert_size;
-    uint8_t fec[4];
-    bool fec_valid;
+    bool use_fec;
+    int tfvn;
 } pc_data_t;
 
+
+typedef struct {
+    map_data_t map_data;
+    vc_data_t vc_data;
+    mc_data_t mc_data;
+    pc_data_t pc_data;
+} transfer_frame_t;
