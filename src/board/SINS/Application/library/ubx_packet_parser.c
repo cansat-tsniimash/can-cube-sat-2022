@@ -91,7 +91,7 @@ static uint32_t _read_u32(const uint8_t * data)
 			| (uint32_t)data[0] << 0*8
 	;
 }
-
+//TODO: Тут какая-то веселая дичь с возвращаемыми значениями
 
 static uint32_t _read_i32(const uint8_t * data)
 {
@@ -105,6 +105,13 @@ static uint32_t _read_u16(const uint8_t * data)
 	return	  (uint16_t)data[1] << 1*8
 			| (uint16_t)data[0] << 0*8
 	;
+}
+
+
+static uint32_t _read_i16(const uint8_t* data)
+{
+	uint16_t buffer = _read_u16(data);
+	return *(int16_t*)&buffer;
 }
 
 
@@ -173,6 +180,38 @@ static void _ubx_parse_nack(const uint8_t * payload, ubx_any_packet_t * packet_)
 }
 
 
+static void _ubx_parse_mon_hw2(const uint8_t* payload, ubx_any_packet_t* packet_)
+{
+	// обрезание пакета до 48 байт т.к. дальше идут зарезервированные поля
+	ubx_monhw2_packet_t* packet = &packet_->packet.monhw2;
+
+	packet->ofsI         =         *(payload + 0);
+	packet->magI         =         *(payload + 1);
+	packet->ofsQ         =         *(payload + 2);
+	packet->magQ         =         *(payload + 3);
+	packet->cfgSource    =         *(payload + 4);
+	packet->reserved0[0] =         *(payload + 5);
+	packet->reserved0[1] =         *(payload + 6);
+	packet->reserved0[2] =         *(payload + 7);
+	packet->lowLevCfg    = _read_u32(payload + 8);
+	packet->reserved1[0] = _read_u32(payload + 12);
+	packet->reserved1[1] = _read_u32(payload + 16);
+	packet->postStatus   = _read_u32(payload + 20);
+	packet->reserved2    = _read_u16(payload + 24);
+}
+
+
+static void _ubx_parse_rxm_svsi(const uint8_t* payload, ubx_any_packet_t* packet_)
+{
+	// обрезание пакета до 48 байт т.к. дальше идут зарезервированные поля
+	ubx_rxmsvsi_packet_t* packet = &packet_->packet.rxmsvsi;
+
+	packet->iTOW   = _read_u32(payload + 0);
+	packet->week   = _read_i16(payload + 4);
+	packet->numVis =         *(payload + 6);
+	packet->numSV  =         *(payload + 7);
+}
+
 int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet)
 {
 	uint16_t pid = ubx_packet_pid(packet_start);
@@ -199,6 +238,14 @@ int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet
 
 	case UBX_PID_CFG_NACK:
 		_ubx_parse_nack(payload_start, packet);
+		break;
+
+	case UBX_PID_MON_HW2:
+		_ubx_parse_mon_hw2(payload_start, packet);
+		break;
+
+	case UBX_PID_RXM_SVSI:
+		_ubx_parse_rxm_svsi(payload_start, packet);
 		break;
 
 	default:

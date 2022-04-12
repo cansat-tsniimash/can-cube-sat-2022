@@ -30,6 +30,8 @@ typedef enum ubx_pid_t
 	UBX_PID_NAV_TIMEGPS = 0x0120,
 	UBX_PID_CFG_NACK = 0x0500,
 	UBX_PID_CFG_ACK  = 0x0501,
+	UBX_PID_MON_HW2 = 0x0A0B,
+	UBX_PID_RXM_SVSI = 0x0220,
 } ubx_pid_t;
 
 
@@ -147,6 +149,53 @@ typedef struct ubx_nack_packet_t
 	ubx_pid_t packet_pid;
 } ubx_nack_packet_t;
 
+//! Сообщение об ошибке в полученном конфигурационном пакете
+typedef struct ubx_monhw2_packet_t
+{
+	/* Дисбаланс I-составляющей комплексного сигнала, масштабированный
+	(-128 = max. отрицательный дисбаланс, 127 = max. положительный дисбаланс).*/
+	int8_t ofsI;
+	/* Магнитуда I-составляющей комплексного сигнала, масштабированная
+	(0 = нет сигнала, 255 = max. магнитуда).*/
+	uint8_t magI;
+	/* Дисбаланс Q-составляющей комплексного сигнала, масштабированный
+	(-128 = max. отрицательный дисбаланс, 127 = max. положительный дисбаланс).*/
+	int8_t ofsQ;
+	/* Магнитуда Q-составляющей комплексного сигнала, масштабированная
+	(0 = нет сигнала, 255 = max. магнитуда).*/
+	uint8_t magQ;
+	/* Источник низкоуровневой конфигурации:
+	   114 ROM
+	   111 OTP
+	   112 ножки для конфигурирования
+	   102 образ flash*/
+	uint8_t cfgSource;
+	/* Зарезервировано*/
+	uint8_t reserved0[3];
+	/* Низкоуровневая конфигурация*/
+	uint32_t lowLevCfg;
+	/* Зарезервировано*/
+	uint32_t reserved1[2];
+	/* Слово состояния теста POST*/
+	uint32_t postStatus;
+	/* Зарезервировано*/
+	uint32_t reserved2;
+} ubx_monhw2_packet_t;
+
+//! Сообщение об ошибке в полученном конфигурационном пакете
+typedef struct ubx_rxmsvsi_packet_t
+{
+	/* Время недели GPS для эпохи навигации (см. "6.2. Navigation Epoch" и
+	"6.3. Метки времени iTOW" [2] для получения дополнительной информации).*/
+	uint32_t iTOW;
+	/* Номер недели эпохи навигации (см. "6.2. Navigation Epoch" [2]).*/
+	int16_t week;
+	/* Количество видимых спутников*/
+	uint8_t numVis;
+	/* Количество блоков данных, следующих далее, по одному блоку на спутник.*/
+	uint8_t numSV;
+	//Начало повторяющихся блоков (повторяются numSV раз) :(
+} ubx_rxmsvsi_packet_t;
 
 //! Структура, включающая данные любого пакета
 typedef struct ubx_any_packet_t
@@ -160,6 +209,8 @@ typedef struct ubx_any_packet_t
 		ubx_navsol_packet_t navsol;
 		ubx_ack_packet_t ack;
 		ubx_nack_packet_t nack;
+		ubx_monhw2_packet_t monhw2;
+		ubx_rxmsvsi_packet_t rxmsvsi;
 	} packet;
 } ubx_any_packet_t;
 
