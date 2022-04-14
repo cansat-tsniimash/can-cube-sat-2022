@@ -157,7 +157,7 @@ static void _ubx_parse_nav_timegps(const uint8_t * payload, ubx_any_packet_t * p
 	packet->tow_ms = _read_u32(payload);
 	packet->ftow = _read_i32(payload + 4);
 	packet->week = _read_u16(payload + 8);
-	packet->leaps = *(payload + 10);
+	packet->leaps = *((int8_t*)payload + 10);
 	packet->valid_flags = *(payload + 11);
 	packet->t_acc = _read_u32(payload + 12);
 }
@@ -183,13 +183,13 @@ static void _ubx_parse_mon_hw2(const uint8_t* payload, ubx_any_packet_t* packet_
 {
 	ubx_monhw2_packet_t* packet = &packet_->packet.monhw2;
 
-	packet->ofsI         =         *(payload + 0);
-	packet->magI         =         *(payload + 1);
-	packet->ofsQ         =         *(payload + 2);
-	packet->magQ         =         *(payload + 3);
-	packet->cfgSource    =         *(payload + 4);
-	packet->lowLevCfg    = _read_u32(payload + 8);
-	packet->postStatus   = _read_u32(payload + 20);
+	packet->ofsI         = *((int8_t*)payload + 0);
+	packet->magI         =          *(payload + 1);
+	packet->ofsQ         = *((int8_t*)payload + 2);
+	packet->magQ         =          *(payload + 3);
+	packet->cfgSource    =          *(payload + 4);
+	packet->lowLevCfg    =  _read_u32(payload + 8);
+	packet->postStatus   =  _read_u32(payload + 20);
 }
 
 
@@ -215,11 +215,11 @@ int ubx_parse_rxm_svsi_SV(ubx_rxmsvsi_packet_t packet, uint8_t SV_index, ubx_rxm
 {
 	if (SV_index < ubx_parse_rxm_svsi_SV_mun(packet))
 	{
-		SV_packet->svid   =         *(packet.SVbuf_ptr + 0 + 6 * SV_index);
-		SV_packet->svFlag =         *(packet.SVbuf_ptr + 1 + 6 * SV_index);
-		SV_packet->azim   = _read_i16(packet.SVbuf_ptr + 2 + 6 * SV_index);
-		SV_packet->elev   =         *(packet.SVbuf_ptr + 4 + 6 * SV_index);
-		SV_packet->age    =         *(packet.SVbuf_ptr + 5 + 6 * SV_index);
+		SV_packet->svid   =          *(packet.SVbuf_ptr + 0 + 6 * SV_index);
+		SV_packet->svFlag =          *(packet.SVbuf_ptr + 1 + 6 * SV_index);
+		SV_packet->azim   =  _read_i16(packet.SVbuf_ptr + 2 + 6 * SV_index);
+		SV_packet->elev   = *((int8_t*)packet.SVbuf_ptr + 4 + 6 * SV_index);
+		SV_packet->age    =          *(packet.SVbuf_ptr + 5 + 6 * SV_index);
 		return 0;
 	}
 	return EADDRNOTAVAIL;
@@ -228,7 +228,7 @@ int ubx_parse_rxm_svsi_SV(ubx_rxmsvsi_packet_t packet, uint8_t SV_index, ubx_rxm
 
 uint8_t ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_t SV_packet)
 {
-	return SV_packet.svFlag & 0b1111;
+	return SV_packet.svFlag & 0x0F;
 }
 
 
@@ -258,13 +258,13 @@ uint8_t ubx_parse_rxm_svsi_SV_notAvail(ubx_rxmsvsi_SV_packet_t SV_packet)
 
 uint8_t ubx_parse_rxm_svsi_SV_almAge(ubx_rxmsvsi_SV_packet_t SV_packet)
 {
-	return SV_packet.age & 0b1111;
+	return SV_packet.age & 0x0F;
 }
 
 
 uint8_t ubx_parse_rxm_svsi_SV_ephAge(ubx_rxmsvsi_SV_packet_t SV_packet)
 {
-	return (SV_packet.age >> 4) & 0b1111;
+	return (SV_packet.age >> 4) & 0x0F;
 }
 
 
