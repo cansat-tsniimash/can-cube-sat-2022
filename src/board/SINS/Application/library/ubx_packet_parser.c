@@ -4,7 +4,6 @@
  *  Created on: Apr 4, 2020
  *      Author: snork
  */
-
 #include "ubx_packet_parser.h"
 
 #include <errno.h>
@@ -91,16 +90,16 @@ static uint32_t _read_u32(const uint8_t * data)
 			| (uint32_t)data[0] << 0*8
 	;
 }
-//TODO: Тут какая-то веселая дичь с возвращаемыми значениями
 
-static uint32_t _read_i32(const uint8_t * data)
+
+static int32_t _read_i32(const uint8_t * data)
 {
 	uint32_t buffer = _read_u32(data);
 	return *(int32_t*)&buffer;
 }
 
 
-static uint32_t _read_u16(const uint8_t * data)
+static uint16_t _read_u16(const uint8_t * data)
 {
 	return	  (uint16_t)data[1] << 1*8
 			| (uint16_t)data[0] << 0*8
@@ -108,7 +107,7 @@ static uint32_t _read_u16(const uint8_t * data)
 }
 
 
-static uint32_t _read_i16(const uint8_t* data)
+static int16_t _read_i16(const uint8_t* data)
 {
 	uint16_t buffer = _read_u16(data);
 	return *(int16_t*)&buffer;
@@ -182,7 +181,6 @@ static void _ubx_parse_nack(const uint8_t * payload, ubx_any_packet_t * packet_)
 
 static void _ubx_parse_mon_hw2(const uint8_t* payload, ubx_any_packet_t* packet_)
 {
-	// обрезание пакета до 48 байт т.к. дальше идут зарезервированные поля
 	ubx_monhw2_packet_t* packet = &packet_->packet.monhw2;
 
 	packet->ofsI         =         *(payload + 0);
@@ -190,27 +188,85 @@ static void _ubx_parse_mon_hw2(const uint8_t* payload, ubx_any_packet_t* packet_
 	packet->ofsQ         =         *(payload + 2);
 	packet->magQ         =         *(payload + 3);
 	packet->cfgSource    =         *(payload + 4);
-	packet->reserved0[0] =         *(payload + 5);
-	packet->reserved0[1] =         *(payload + 6);
-	packet->reserved0[2] =         *(payload + 7);
 	packet->lowLevCfg    = _read_u32(payload + 8);
-	packet->reserved1[0] = _read_u32(payload + 12);
-	packet->reserved1[1] = _read_u32(payload + 16);
 	packet->postStatus   = _read_u32(payload + 20);
-	packet->reserved2    = _read_u16(payload + 24);
 }
 
 
 static void _ubx_parse_rxm_svsi(const uint8_t* payload, ubx_any_packet_t* packet_)
 {
-	// обрезание пакета до 48 байт т.к. дальше идут зарезервированные поля
 	ubx_rxmsvsi_packet_t* packet = &packet_->packet.rxmsvsi;
 
-	packet->iTOW   = _read_u32(payload + 0);
-	packet->week   = _read_i16(payload + 4);
-	packet->numVis =         *(payload + 6);
-	packet->numSV  =         *(payload + 7);
+	packet->iTOW      = _read_u32(payload + 0);
+	packet->week      = _read_i16(payload + 4);
+	packet->numVis    =         *(payload + 6);
+	packet->numSV     =         *(payload + 7);
+	packet->SVbuf_ptr =          (payload + 8);
 }
+
+
+uint8_t ubx_parse_rxm_svsi_SV_mun(ubx_rxmsvsi_packet_t packet)
+{
+	return packet.numSV;
+}
+
+
+int ubx_parse_rxm_svsi_SV(ubx_rxmsvsi_packet_t packet, uint8_t SV_index, ubx_rxmsvsi_SV_packet_t * SV_packet)
+{
+	if (SV_index < ubx_parse_rxm_svsi_SV_mun(packet))
+	{
+		SV_packet->svid   =         *(packet.SVbuf_ptr + 0 + 6 * SV_index);
+		SV_packet->svFlag =         *(packet.SVbuf_ptr + 1 + 6 * SV_index);
+		SV_packet->azim   = _read_i16(packet.SVbuf_ptr + 2 + 6 * SV_index);
+		SV_packet->elev   =         *(packet.SVbuf_ptr + 4 + 6 * SV_index);
+		SV_packet->age    =         *(packet.SVbuf_ptr + 5 + 6 * SV_index);
+		return 0;
+	}
+	return EADDRNOTAVAIL;
+}
+
+
+uint8_t ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_t SV_packet)
+{
+	return SV_packet.svFlag & 0b1111;
+}
+
+
+uint8_t ubx_parse_rxm_svsi_SV_healthy(ubx_rxmsvsi_SV_packet_t SV_packet)
+{
+	return (SV_packet.svFlag & (1 << 4)) >> 4;
+}
+
+
+uint8_t ubx_parse_rxm_svsi_SV_ephVal(ubx_rxmsvsi_SV_packet_t SV_packet)
+{
+	return (SV_packet.svFlag & (1 << 5)) >> 5;
+}
+
+
+uint8_t ubx_parse_rxm_svsi_SV_almVal(ubx_rxmsvsi_SV_packet_t SV_packet)
+{
+	return (SV_packet.svFlag & (1 << 6)) >> 6;
+}
+
+
+uint8_t ubx_parse_rxm_svsi_SV_notAvail(ubx_rxmsvsi_SV_packet_t SV_packet)
+{
+	return (SV_packet.svFlag & (1 << 7)) >> 7;
+}
+
+
+uint8_t ubx_parse_rxm_svsi_SV_almAge(ubx_rxmsvsi_SV_packet_t SV_packet)
+{
+	return SV_packet.age & 0b1111;
+}
+
+
+uint8_t ubx_parse_rxm_svsi_SV_ephAge(ubx_rxmsvsi_SV_packet_t SV_packet)
+{
+	return (SV_packet.age >> 4) & 0b1111;
+}
+
 
 int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet)
 {
