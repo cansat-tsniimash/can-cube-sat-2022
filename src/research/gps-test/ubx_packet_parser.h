@@ -170,19 +170,13 @@ typedef struct ubx_monhw2_packet_t
 	   112 ножки для конфигурирования
 	   102 образ flash*/
 	uint8_t cfgSource;
-	/* Зарезервировано*/
-	uint8_t reserved0[3];
 	/* Низкоуровневая конфигурация*/
 	uint32_t lowLevCfg;
-	/* Зарезервировано*/
-	uint32_t reserved1[2];
 	/* Слово состояния теста POST*/
 	uint32_t postStatus;
-	/* Зарезервировано*/
-	uint32_t reserved2;
 } ubx_monhw2_packet_t;
 
-//! Сообщение об ошибке в полученном конфигурационном пакете
+//! SV Status Info
 typedef struct ubx_rxmsvsi_packet_t
 {
 	/* Время недели GPS для эпохи навигации (см. "6.2. Navigation Epoch" и
@@ -194,8 +188,26 @@ typedef struct ubx_rxmsvsi_packet_t
 	uint8_t numVis;
 	/* Количество блоков данных, следующих далее, по одному блоку на спутник.*/
 	uint8_t numSV;
-	//Начало повторяющихся блоков (повторяются numSV раз) :(
+	/* Начало повторяющихся блоков(повторяются numSV раз) */
+	uint8_t* SVbuf_ptr;
 } ubx_rxmsvsi_packet_t;
+
+
+// SV Status Info информация о спутниуах
+typedef struct ubx_rxmsvsi_SV_packet_t
+{
+	/* Идентификатор спутника */
+	uint8_t svid;
+	/* Информационные флаги */
+	uint8_t svFlag;
+	/* Азимут */
+	int16_t azim;
+	/* Возвышение */
+	int8_t elev;
+	/* Возврат альманаха и эфемерид */
+	uint8_t age;
+} ubx_rxmsvsi_SV_packet_t;
+
 
 //! Структура, включающая данные любого пакета
 typedef struct ubx_any_packet_t
@@ -239,6 +251,43 @@ uint8_t ubx_uint16crc_get_crcb(uint16_t crc16);
 
 //! Сборка PID значения из отдельных значений class и packet_id
 uint16_t ubx_make_pid(uint8_t packet_class, uint8_t packet_id);
+
+
+// Возвращает количество блоков данных, следующих далее, по одному блоку на спутник.
+uint8_t ubx_parse_rxm_svsi_SV_mun(ubx_rxmsvsi_packet_t packet);
+
+/* 
+	Функция читает из сообщения RXM-SVSI данные по конкретному спутнику
+	Аргументы:
+	packet    - пакет формата RXM-SVSI
+	SV_index  - индекс спутника (от 0 до numSV-1). Количество спутников может быть прочитано
+	функцией ubx_parse_rxm_svsi_SV_mun
+	SV_packet - указатель на структуру, в которую будет записан пакет.
+	Возвращает: 0 если чтение произошло успеншно и EADDRNOTAVAIL если индекс был задан неверно.
+*/
+int ubx_parse_rxm_svsi_SV(ubx_rxmsvsi_packet_t packet, uint8_t SV_index, ubx_rxmsvsi_SV_packet_t* SV_packet);
+
+// Возвращает показатель качества (URA) в диапазоне 0..15 из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_t SV_packet);
+
+// Возвращает флаг работоспособности спутника из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_healthy(ubx_rxmsvsi_SV_packet_t SV_packet);
+
+// Возвращает флаг достоверности эфемерид из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_ephVal(ubx_rxmsvsi_SV_packet_t SV_packet);
+
+// Возвращает флаг достоверности альманаха из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_almVal(ubx_rxmsvsi_SV_packet_t SV_packet);
+
+// Возвращает флаг доступности спутника из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_notAvail(ubx_rxmsvsi_SV_packet_t SV_packet);
+
+// Возвращает возраст ALM (альманах) в днях со смещением 4 из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_almAge(ubx_rxmsvsi_SV_packet_t SV_packet);
+
+// Возвращает возраст EPH (эфемериды) в часах со смещением 4 из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_ephAge(ubx_rxmsvsi_SV_packet_t SV_packet);
+
 
 //! Разбор тела пакета
 int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet);
