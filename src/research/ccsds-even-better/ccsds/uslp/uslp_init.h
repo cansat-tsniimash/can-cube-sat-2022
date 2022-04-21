@@ -2,6 +2,8 @@
 
 #include "sap.h"
 #include "sep.h"
+#include "vc_receive.h"
+#include "recieve.h"
 
 typedef struct {
     size_t queue_size;
@@ -166,4 +168,52 @@ void pc_init(uslp_core_t* uslp, pc_t* pc, const pc_config_t* config) {
 void sep_init(uslp_core_t* uslp, sep_t* sep, pc_t* pc) {
     sep->pc = pc;
     sep->uslp = uslp;
+}
+
+typedef struct {
+    int tfvn;
+    int is_fec_presented;
+    size_t insert_size;
+    size_t demx_entry_count;
+} sap_receive_config_t;
+
+void sap_receive_init(uslp_core_t* uslp, sap_receive_t* sapr, const sap_receive_config_t* config) {
+    sapr->pcr.insert_size = config->insert_size;
+    sapr->pcr.is_fec_presented = config->is_fec_presented;
+    sapr->pcr.tfvn = config->tfvn;
+    sapr->demx.entry_capacity = config->demx_entry_count;
+    sapr->demx.entry_count = 0;
+    sapr->demx.entry_arr = uslp->mem._alloc(config->demx_entry_count * sizeof(sapr->demx.entry_arr[0]));
+}
+
+typedef struct {
+    upid_t upid;
+    int map_id;
+    int vc_id;
+    int sc_id;
+    bool sc_is_destination;
+    pvn_t pvn;
+    cop_enum_t cop_type;
+    size_t buffer_size;
+    void (*map_cb)(void* arg, const uint8_t* data, size_t size);
+    void *map_cb_arg;
+    sap_receive_t* sapr;
+} vc_receive_config_t;
+
+void vc_receive_init(uslp_core_t* uslp, vc_receive_t* vcr, const vc_receive_config_t* config) {
+    vcr->mapr.map_id = config->map_id;
+    vcr->mapr.pvn = config->pvn;
+    vcr->mapr.upid = config->upid;
+
+    vcr->buffer.capacity = config->buffer_size;
+    vcr->buffer.index = 0;
+    vcr->buffer.size = 0;
+    vcr->buffer.data = uslp->mem._alloc(config->buffer_size);
+
+    vcr->ex_frame_count = 0;
+    vcr->sc_frame_count = 0;
+    vcr->map_cb = config->map_cb;
+    vcr->map_cb_arg = config->map_cb_arg;
+
+    demx_add_vcf(&config->sapr->demx, vcr, vc_receive_cb, config->sc_id, config->sc_is_destination, config->vc_id);
 }

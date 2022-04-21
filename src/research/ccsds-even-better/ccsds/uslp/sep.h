@@ -7,7 +7,7 @@
 #include "map.h"
 #include "mc.h"
 #include "pc.h"
-#include "endian2.h"
+#include "../endian2.h"
  
 typedef struct {
     uslp_core_t* uslp;
@@ -68,14 +68,14 @@ bool _sep_choose_path(sep_t* sep, bool forced) {
     mx_node* pcmx = &sep->pc->mx;
     mx_node* mcmx = mx_current_ready(pcmx);
     if (mcmx == 0) {
+        if (!forced) {
+            return false;   
+        }
         mcmx = mx_current_updated(pcmx);
         if (mcmx == 0) {
             sep->path.mc = 0;
             sep->path.vc = 0;
         } else {
-            if (!forced) {
-                return false;
-            }
             _sep_forcing(sep);
             mx_node* mcmx = mx_current_ready(pcmx);
             mx_node* vcmx = mx_current_ready(mcmx);
@@ -107,7 +107,30 @@ transfer_frame_t _sep_get_transfer_frame(sep_t* sep) {
     return frame;
 }
 
+uint16_t _sep_calc_size(const transfer_frame_t* frame) {
+    uint16_t fsize = 0;
+    fsize += 4;
+    if (!frame->vc_data.frame_trancated) {
+        fsize += 3 + frame->vc_data.vc_frame_count_length;
+    }
+    if (frame->mc_data.ocf_valid) {
+        fsize += 4;
+    }
+    if (frame->pc_data.use_fec) {
+        fsize += 2;
+    }
+    fsize += (uint16_t)frame->pc_data.insert_size;
+    fsize += (uint16_t)frame->map_data.tfdf.size;
+    if (frame->map_data.tfdf.tfdz_rule <= 3) {
+        fsize += 3;
+    } else {
+        fsize += 1;
+    }
+    return fsize;
+}
+
 size_t _sep_serialize_transfer_frame(const transfer_frame_t* frame, uint8_t* data, size_t size) {
+
     bit_array_t ba = {0};
     ba.ptr = data;
     ba.bit_start = 0;
@@ -119,7 +142,7 @@ size_t _sep_serialize_transfer_frame(const transfer_frame_t* frame, uint8_t* dat
     uint8_t pcc_flag = frame->vc_data.contains_protocol_control_commands ? 1 : 0;
     uint8_t reserve = 0;
     uint8_t ocfp_flag = frame->mc_data.ocf_valid ? 1 : 0;
-
+    uint16_t fsize = _sep_calc_size(frame);
 
 	ccsds_insert(&ba, &frame->pc_data.tfvn, 4);
 	ccsds_insert(&ba, &frame->mc_data.sc_id, 16);
@@ -129,7 +152,7 @@ size_t _sep_serialize_transfer_frame(const transfer_frame_t* frame, uint8_t* dat
     ccsds_insert(&ba, &eofph_flag, 1);
     
     if (!frame->vc_data.frame_trancated) {
-		ccsds_insert(&ba, &size, 16);
+		ccsds_insert(&ba, &fsize, 16);
 		ccsds_insert(&ba, &bsc_flag, 1);
 		ccsds_insert(&ba, &pcc_flag, 1);
         ccsds_insert(&ba, &reserve, 2);
@@ -152,7 +175,7 @@ size_t _sep_serialize_transfer_frame(const transfer_frame_t* frame, uint8_t* dat
 	if (frame->map_data.tfdf.tfdz_rule <= 3) {
 		ccsds_insert(&ba, &frame->map_data.tfdf.pointer_fh_lo, 16);
 	}
-    memcpy(&ba.ptr + ba.bit_start / 8, frame->map_data.tfdf.tfdz, frame->map_data.tfdf.size);
+    memcpy(ba.ptr + ba.bit_start / 8, frame->map_data.tfdf.tfdz, frame->map_data.tfdf.size);
     ba.bit_start += 8 * frame->map_data.tfdf.size;
 	
 

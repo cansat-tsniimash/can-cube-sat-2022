@@ -1,11 +1,17 @@
 #pragma once
 
 #include "uslp_types.h"
-#include "endian2.h"
+#include "../endian2.h"
 #include "pc.h"
 #include "sep.h"
 
-bool parse(pc_t* pc, uint8_t* data, size_t size, transfer_frame_t* frame) {
+typedef struct {
+    int tfvn;
+    bool is_fec_presented;
+    size_t insert_size;
+} pcr_t;
+
+bool parse(pcr_t* pcr, uint8_t* data, size_t size, transfer_frame_t* frame) {
     bit_array_t ba = {0};
     ba.ptr = data;
     uint16_t frame_length = 0;
@@ -14,10 +20,10 @@ bool parse(pc_t* pc, uint8_t* data, size_t size, transfer_frame_t* frame) {
     uint8_t eofph_flag = 0;
 
     
-    uint16_t tfdz_size = size - 4;
+    uint16_t tfdz_size = (uint16_t)size - 4;
 
     ccsds_extract(&ba, &frame->pc_data.tfvn, 4);
-    if (frame->pc_data.tfvn != pc->tfvn) {
+    if (frame->pc_data.tfvn != pcr->tfvn) {
         return false;
     }
 	ccsds_extract(&ba, &frame->mc_data.sc_id, 16);
@@ -53,9 +59,10 @@ bool parse(pc_t* pc, uint8_t* data, size_t size, transfer_frame_t* frame) {
         
         //insert zone
         frame->pc_data.insert_data = ba.ptr + ba.bit_start / 8;
-        ba.bit_start += 8 * pc->insert_size;
+        frame->pc_data.insert_size = pcr->insert_size;
+        ba.bit_start += 8 * pcr->insert_size;
 
-        tfdz_size -= pc->insert_size;
+        tfdz_size -= (uint16_t)pcr->insert_size;
 	}
     
 
@@ -64,12 +71,15 @@ bool parse(pc_t* pc, uint8_t* data, size_t size, transfer_frame_t* frame) {
 	ccsds_extract(&ba, &frame->map_data.tfdf.upid, 5);
 	if (frame->map_data.tfdf.tfdz_rule <= 3) {
 		ccsds_extract(&ba, &frame->map_data.tfdf.pointer_fh_lo, 16);
-	}
+        tfdz_size -= 3;
+	} else {
+        tfdz_size -= 1;
+    }
 	frame->map_data.tfdf.tfdz = ba.ptr + ba.bit_start / 8;
 
     if (!frame->vc_data.frame_trancated) {
         //FEC
-        if (pc->is_fec_presented) {
+        if (pcr->is_fec_presented) {
             frame->pc_data.use_fec = true;
             uint16_t fec_crc = 0;
             ccsds_endian_extract(data + size - 2, 0, (uint8_t*)&fec_crc, 16);
@@ -96,12 +106,6 @@ bool parse(pc_t* pc, uint8_t* data, size_t size, transfer_frame_t* frame) {
 
 	return true;
 }
-
-typedef struct {
-    bool is_fec_presented;
-    size_t insert_size;
-    int tfvn;
-} sep_receive_t;
 
 
 
@@ -132,24 +136,24 @@ typedef struct {
 
 typedef struct {
     
-    demx_entry_t* entry_list;
+    demx_entry_t* entry_arr;
     size_t entry_count;
-    size_t entry_list_size;
+    size_t entry_capacity;
 } demx_t;
 
 typedef struct {
     uint8_t* data;
     size_t size;
-    pc_t* pc;
+    pcr_t pcr;
     demx_t demx;
 } sap_receive_t;
 bool sep_push_data(sap_receive_t* sep, uint8_t* data, size_t size) {
     transfer_frame_t frame = {0};
-    if (!parse(sep->pc, data, size, &frame)) {
+    if (!parse(&sep->pcr, data, size, &frame)) {
         return false;
     }
-    demx_entry_t *cur = &sep->demx.entry_list[0];
-    for (int i = 0; i < sep->demx.entry_count; i++) {
+    demx_entry_t *cur = &sep->demx.entry_arr[0];
+    for (size_t i = 0; i < sep->demx.entry_count; i++) {
         if (cur->service == DEMX_SERVICE_INSERT) {
             cur->cb.insert(cur->arg, 
                            frame.pc_data.insert_data, 
@@ -182,16 +186,16 @@ bool sep_push_data(sap_receive_t* sep, uint8_t* data, size_t size) {
 }
 
 void demx_add_insert(demx_t* demx, void* arg, sep_callback_insert cb) {
-    assert(demx->entry_count < demx->entry_list_size);
-    demx_entry_t* entry = &demx->entry_list[demx->entry_count++];
+    assert(demx->entry_count < demx->entry_capacity);
+    demx_entry_t* entry = &demx->entry_arr[demx->entry_count++];
     entry->service = DEMX_SERVICE_INSERT;
     entry->cb.insert = cb;
     entry->arg = arg;
 }
 void demx_add_ocf(demx_t* demx, void* arg, sep_callback_ocf cb, 
                   int sc_id, bool sc_id_is_destination) {
-    assert(demx->entry_count < demx->entry_list_size);
-    demx_entry_t* entry = &demx->entry_list[demx->entry_count++];
+    assert(demx->entry_count < demx->entry_capacity);
+    demx_entry_t* entry = &demx->entry_arr[demx->entry_count++];
     entry->service = DEMX_SERVICE_OCF;
     entry->cb.ocf = cb;
     entry->arg = arg;
@@ -200,8 +204,8 @@ void demx_add_ocf(demx_t* demx, void* arg, sep_callback_ocf cb,
 }
 void demx_add_mcf(demx_t* demx, void* arg, sep_callback_mcf cb, 
                   int sc_id, bool sc_id_is_destination) {
-    assert(demx->entry_count < demx->entry_list_size);
-    demx_entry_t* entry = &demx->entry_list[demx->entry_count++];
+    assert(demx->entry_count < demx->entry_capacity);
+    demx_entry_t* entry = &demx->entry_arr[demx->entry_count++];
     entry->service = DEMX_SERVICE_MCF;
     entry->cb.mcf = cb;
     entry->arg = arg;
@@ -210,8 +214,8 @@ void demx_add_mcf(demx_t* demx, void* arg, sep_callback_mcf cb,
 }
 void demx_add_vcf(demx_t* demx, void* arg, sep_callback_vcf cb, 
                   int sc_id, bool sc_id_is_destination, int vc_id) {
-    assert(demx->entry_count < demx->entry_list_size);
-    demx_entry_t* entry = &demx->entry_list[demx->entry_count++];
+    assert(demx->entry_count < demx->entry_capacity);
+    demx_entry_t* entry = &demx->entry_arr[demx->entry_count++];
     entry->service = DEMX_SERVICE_VCF;
     entry->cb.vcf = cb;
     entry->arg = arg;

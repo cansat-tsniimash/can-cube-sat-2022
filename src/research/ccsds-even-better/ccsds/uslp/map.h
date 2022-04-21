@@ -2,7 +2,7 @@
 
 #include "uslp_types.h"
 #include "buffer.h"
-#include "epp_empty.h"
+#include "../epp/epp_empty.h"
 
 void _map_access_set_empty(uint8_t* data, size_t size) {
     static const uint8_t pattern[] = {0xDE, 0xAF, 0xBA, 0xBE};
@@ -75,7 +75,14 @@ bool map_pull_data(map_t* map, map_data_t* md, bool* release_sap, bool* release_
         *release_sap = false;
     }
 
-    if (map->tfdf.index == map->tfdf.size) {
+    if (map->map_type == MAP_TYPE_ACCESS) {
+        if (src_size > dst_size) {
+            map->pointer_fh_lo = 0xFFFF;
+        } else {
+            map->pointer_fh_lo = (uint16_t)map->tfdf.index;
+        }
+    }
+    if (map->tfdf.index == map->tfdf.size || map->map_type == MAP_TYPE_ACCESS) {
         tfdf->tfdz = map->tfdf.data;
         tfdf->size = map->tfdf.size;
         md->frame_count = map->tfdf_count;
@@ -86,6 +93,7 @@ bool map_pull_data(map_t* map, map_data_t* md, bool* release_sap, bool* release_
         tfdf->upid = map->upid;
 
         if (map->map_type == MAP_TYPE_ACCESS) {
+            _map_access_set_empty(map->tfdf.data + map->tfdf.index, map->tfdf.size - map->tfdf.index);
             *release_map = true;
         } else if (map->map_type == MAP_TYPE_PACKET) {
             *release_map = *release_sap;
@@ -118,7 +126,11 @@ void map_clear_tfdf(map_t* map) {
     map->tfdf.index = 0;
     map->tfdf_count++;
     if (map->map_type == MAP_TYPE_ACCESS) {
-        map->tfdz_rule = TFDZ_RULE_MAPA_CONTINUE;
+        if (map->source_buffer.data == 0) {
+            map->tfdz_rule = TFDZ_RULE_MAPA_START;
+        } else {
+            map->tfdz_rule = TFDZ_RULE_MAPA_CONTINUE;
+        }
     } else if (map->map_type == MAP_TYPE_PACKET) {
         map->pointer_fh_lo = 0xFFFF;
     } else {
@@ -130,8 +142,5 @@ void map_clear_source(map_t* map) {
     map->source_buffer.size = 0;
     map->source_buffer.data = 0;
     map->source_buffer.capacity = 0;
-    if (map->map_type == MAP_TYPE_ACCESS) {
-        map->tfdz_rule = TFDZ_RULE_MAPA_START;
-    }
 }
 

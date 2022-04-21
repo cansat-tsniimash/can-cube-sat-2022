@@ -33,4 +33,12 @@ int epp_make_header_auto_length(epp_header_t *epp_header, uint8_t *arr, int size
 
 int epp_make_header_auto_length2(epp_header_t *epp_header, uint8_t *arr, int size, uint32_t payload_length);
 
+typedef struct {
+	epp_header_t header;
+	uint8_t* data;
+	size_t size;
+} epp_packet_t;
+
+int epp_extract_packet(epp_packet_t* frame, const uint8_t* data, size_t size);
+
 #endif /* INCLUDE_CCSDS_NL_EPP_EPP_H_ */

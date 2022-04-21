@@ -5,11 +5,12 @@
  *      Author: HP
  */
 
+#include <string.h>
 
 #include "epp.h"
-#include "../ccscds_endian.h"
+#include "../ccsds_endian.h"
 
-const uint8_t epp_pvn = 0x7;
+const static uint8_t epp_pvn = 0x7;
 
 int epp_make_header(epp_header_t *epp_header, uint8_t *arr, int size) {
 	epp_header->pvn = epp_pvn;
@@ -91,15 +92,42 @@ int epp_extract_header(epp_header_t *epp_header, const uint8_t *arr, int size) {
 		ccsds_endian_extract(arr, k, &epp_header->udf, 4);
 		ccsds_endian_extract(arr, k + 4, &epp_header->epp_id_ex, 4);
 		k += 8;
+	} else {
+		epp_header->udf = 0;
+		epp_header->epp_id_ex = 0;
 	}
 	if (epp_header->lol == 3) {
 		ccsds_endian_extract(arr, k, &epp_header->ccsds_defined_field, 16);
 		k += 16;
+	} else {
+		epp_header->ccsds_defined_field = 0;
 	}
 	if (epp_header->lol > 0) {
 		ccsds_endian_extract(arr, k, &epp_header->packet_length, 1 << (epp_header->lol + 2));
 		k += 1 << (epp_header->lol + 2);
+	} else {
+		epp_header->packet_length = 0;
 	}
 	return 1 << epp_header->lol;
 }
 
+void epp_set_empty_packet(uint8_t* data, size_t size) {
+    if (size == 0) {
+        return;
+    }
+    epp_header_t eh = {0};
+    eh.epp_id = EPP_ID_IDLE;
+    
+    size_t count = epp_make_header_auto_length(&eh, data, size, size);
+    memcpy(data + count, 0, size - count);
+}
+
+int epp_extract_packet(epp_packet_t* frame, const uint8_t* data, size_t size) {
+	int count = epp_extract_header(&frame->header, data, size);
+    if (count == 0) {
+        return 1;
+    }
+    frame->data = data + count;
+    frame->size = size - count;
+    return 0;
+}

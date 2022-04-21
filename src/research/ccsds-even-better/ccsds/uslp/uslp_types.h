@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "buffer.h"
+
 typedef enum {
     MX_OBJ_SAP,
     MX_OBJ_MAP,
@@ -56,13 +58,6 @@ typedef struct {
 typedef struct {
     _memory_t mem;
 } uslp_core_t;
-
-typedef struct {
-    uint8_t* data;
-    size_t capacity;
-    size_t size;
-    size_t index;
-} buffer_t;
 
 typedef enum {
     PVN_SP = 0,
@@ -254,7 +249,6 @@ typedef struct {
     uint8_t* insert_data; 
     size_t insert_size;
     bool is_fec_presented;
-    int tfvn;
 } pc_t;
 
 

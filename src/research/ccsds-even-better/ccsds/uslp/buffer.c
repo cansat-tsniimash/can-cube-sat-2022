@@ -1,6 +1,4 @@
-#pragma once
-
-#include "uslp_types.h"
+#include "buffer.h"
 
 bool buffer_is_empty(const buffer_t* buffer) {
     return buffer->size > 0;

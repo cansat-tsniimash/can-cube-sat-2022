@@ -40,7 +40,7 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
     bool release_sap = false;
     bool release_map = false;
     while (true) {
-        // Смотрим, есть map канал с данными
+        // Смотрим, есть ли map канал с данными
         mx_node* mapmx = mx_current_updated(vcmx);
         if (mapmx == 0) {  
             break;
@@ -57,15 +57,19 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
         // Получаем данные из map канала. Если sap нету, то он выдаст md, если он есть,
         // и не выдаст, если его нет. 
         // md_legit - переменная md содержит в себе md.
-        // release_sap - означает, что sap израсходован, там больше нет данных и его можно очистить,
+        // release_sap - означает, что sap израсходован, там больше нет данных и его можно очистить
         // и выкинуть из очередей
         // release_map - означает, что нам разрешено отпустить map.
         md_legit = map_pull_data(map, &md, &release_sap, &release_map);
 
         // У нас есть какие-то данные. Удостоверимся, что все вершины есть в очередях.
-        // Особый случай с MAPA, так как он не может отдавать данные по частям,
-        // поэтому мы не имеем право насильно просить TFDF
-        if ((!release_sap || !release_map || md_legit) && map->map_type != MAP_TYPE_ACCESS) {
+
+        if (md_legit) {
+            mx_try_push_to_parent_updated(mapmx);
+            mx_push_to_parent_ready_forced(vcmx);
+            mx_push_to_parent_ready_forced(mcmx);
+        } else if (!(release_sap && release_map)) {
+            assert( map->map_type != MAP_TYPE_ACCESS);
             mx_try_push_to_parent_updated(mapmx);
             mx_try_push_to_parent_updated(vcmx);
             mx_try_push_to_parent_updated(mcmx);
@@ -87,17 +91,6 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
                 // Аха!!! VC полон, мы не можем закинуть md.
                 return;
             }
-            // Обновляем очереди готовности
-            
-            
-            if (!mx_is_in_ready(vcmx)) {
-                mx_remove_from_parent_updated(vcmx);
-                mx_push_to_parent_ready(vcmx);
-                if (!mx_is_in_ready(mcmx)) {
-                    mx_remove_from_parent_updated(mcmx);
-                    mx_push_to_parent_ready(mcmx);
-                }
-            }
             // Очищаем map
             map_clear_tfdf(map);
         }
@@ -109,7 +102,8 @@ void vc_pull_everything_from_bottom(vc_t* vc) {
         // то он снова станет текущим в очереди.
         if (release_map) {
             mx_remove_from_parent_updated(mapmx);
-            if (!release_sap || md_legit || mx_current_updated(mapmx)) {
+            
+            if (mx_current_updated(mapmx)) {
                 mx_push_to_parent_updated(mapmx);
             }
         }

@@ -100,28 +100,67 @@ void mx_push_to_parent_updated(mx_node* node) {
 
     }
 }
+
+void mx_remove_from_parent_ready(mx_node* node) {
+    assert (node->state == MX_STATE_READY);
+    mx_node* parent = node->parent;
+    mx_node* prev = node->prev;
+    mx_node* next = node->next;
+
+    if (prev) {
+        prev->next = next;
+    } else {
+        parent->child_ready_start = next;
+    }
+
+    if (next) {
+        next->prev = prev;
+    } else {
+        parent->child_ready_end = prev;
+    }
+    node->next = 0;
+    node->prev = 0;
+    node->state = MX_STATE_NONE;
+}
+void mx_remove_from_parent_updated(mx_node* node) {
+    assert (node->state == MX_STATE_UPDATED);
+    mx_node* parent = node->parent;
+    mx_node* prev = node->prev;
+    mx_node* next = node->next;
+
+    if (prev) {
+        prev->next = next;
+    } else {
+        parent->child_upd_start = next;
+    }
+
+    if (next) {
+        next->prev = prev;
+    } else {
+        parent->child_upd_end = prev;
+    }
+    node->next = 0;
+    node->prev = 0;
+    node->state = MX_STATE_NONE;
+}
 bool mx_try_push_to_parent_updated(mx_node* node) {
-    if (!node->state == MX_STATE_NONE) {
+    if (node->state != MX_STATE_NONE) {
         return false;
     }
-    node->state = MX_STATE_UPDATED;
-    mx_node* parent = node->parent;
-    if (parent->child_upd_end) {
-        parent->child_upd_end->next = node;
-        node->prev = parent->child_upd_end;
-        node->next = 0;
-        
-        parent->child_upd_end = node;
-    } else {
-        parent->child_upd_start = node;
-        parent->child_upd_end = node;
-        node->next = 0;
-        node->prev = 0;
-
-    }
+    mx_push_to_parent_updated(node);
     return true;
 }
 
+void mx_push_to_parent_ready_forced(mx_node* node) {
+    if (node->state == MX_STATE_READY) {
+        return;
+    }
+    if (node->state == MX_STATE_UPDATED) {
+        mx_remove_from_parent_updated(node);
+    }
+    node->state = MX_STATE_NONE;
+    mx_push_to_parent_ready(node);
+}
 bool mx_is_in_ready(mx_node* node) {
     return node->state == MX_STATE_READY;
 }
@@ -168,48 +207,6 @@ void mx_pop_updated(mx_node* parent) {
     }
 }
 
-void mx_remove_from_parent_ready(mx_node* node) {
-    assert (node->state == MX_STATE_READY);
-    mx_node* parent = node->parent;
-    mx_node* prev = node->prev;
-    mx_node* next = node->next;
-
-    if (prev) {
-        prev->next = next;
-    } else {
-        parent->child_ready_start = next;
-    }
-
-    if (next) {
-        next->prev = prev;
-    } else {
-        parent->child_ready_end = prev;
-    }
-    node->next = 0;
-    node->prev = 0;
-    node->state = MX_STATE_NONE;
-}
-void mx_remove_from_parent_updated(mx_node* node) {
-    assert (node->state == MX_STATE_UPDATED);
-    mx_node* parent = node->parent;
-    mx_node* prev = node->prev;
-    mx_node* next = node->next;
-
-    if (prev) {
-        prev->next = next;
-    } else {
-        parent->child_upd_start = next;
-    }
-
-    if (next) {
-        next->prev = prev;
-    } else {
-        parent->child_upd_end = prev;
-    }
-    node->next = 0;
-    node->prev = 0;
-    node->state = MX_STATE_NONE;
-}
 
 mx_node* mx_current_ready(mx_node* node) {
     return node->child_ready_start;
