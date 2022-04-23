@@ -22,7 +22,7 @@
 // Скидывать сообщения в its_link
 #define PROCESS_TO_ITSLINK
 
-#include <../mavlink_types.h>
+#include <mavlink_types.h>
 
 //! Определяем идентификаторы системы
 extern uint8_t mavlink_system;
@@ -46,7 +46,7 @@ int mav_main_get_packet_from_imitator_ctl(mavlink_message_t * msg);
 // Тут генерируется множество вот таких сообщений
 // warning: taking address of packed member of 'struct __mavlink_vision_speed_estimate_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
 // Мы доверяем мавлинку в том, что он не сгенерит ничего невыровненого, поэтому давим эти варнинги
-#include <mavlink.h>
+#include <its/mavlink.h>
 #pragma GCC diagnostic pop
 
 void mav_main_process_bme_message(const mavlink_pld_bme280_data_t * msg, PLD_LOCATION location);
