@@ -106,10 +106,10 @@ void Error_Handler(void);
 #define PPS_Input_EXTI_IRQn EXTI15_10_IRQn
 #define LED_Pin_Pin GPIO_PIN_12
 #define LED_Pin_GPIO_Port GPIOC
-#define COMPR_ON_Pin GPIO_PIN_5
-#define COMPR_ON_GPIO_Port GPIOB
-#define VALVE_ON_Pin GPIO_PIN_8
+#define VALVE_ON_Pin GPIO_PIN_5
 #define VALVE_ON_GPIO_Port GPIOB
+#define COMPR_ON_Pin GPIO_PIN_8
+#define COMPR_ON_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 #define I2C_INT_Pin GPIO_PIN_7

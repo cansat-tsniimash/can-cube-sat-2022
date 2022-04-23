@@ -713,8 +713,8 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, MS_INT_PWR_Pin|BME_INT_PWR_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, SENS_CTRL_NH3_1_Pin|SENS_CTRL_NH3_2_Pin|SENS_CTRL_CO_1_Pin|COMPR_ON_Pin
-                          |VALVE_ON_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, SENS_CTRL_NH3_1_Pin|SENS_CTRL_NH3_2_Pin|SENS_CTRL_CO_1_Pin|VALVE_ON_Pin
+                          |COMPR_ON_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, MICS_PWR_Pin|O2_PWR_Pin, GPIO_PIN_SET);
@@ -736,9 +736,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : MS_INT_PWR_Pin BME_INT_PWR_Pin SENS_CTRL_NH3_1_Pin SENS_CTRL_NH3_2_Pin
-                           SENS_CTRL_CO_1_Pin COMPR_ON_Pin VALVE_ON_Pin */
+                           SENS_CTRL_CO_1_Pin VALVE_ON_Pin COMPR_ON_Pin */
   GPIO_InitStruct.Pin = MS_INT_PWR_Pin|BME_INT_PWR_Pin|SENS_CTRL_NH3_1_Pin|SENS_CTRL_NH3_2_Pin
-                          |SENS_CTRL_CO_1_Pin|COMPR_ON_Pin|VALVE_ON_Pin;
+                          |SENS_CTRL_CO_1_Pin|VALVE_ON_Pin|COMPR_ON_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
