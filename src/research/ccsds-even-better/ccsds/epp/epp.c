@@ -10,12 +10,64 @@
 #include "epp.h"
 #include "../ccsds_endian.h"
 
-const static uint8_t epp_pvn = 0x7;
+#define PVN 0x7
 
-int epp_make_header(epp_header_t *epp_header, uint8_t *arr, int size) {
-	epp_header->pvn = epp_pvn;
 
-	if (1 << epp_header->lol > size ) {
+uint8_t epp_calc_min_lol_packet(size_t packet_length) {
+	uint8_t lol = 0;
+	if (packet_length == 1) {
+		lol = 0;
+	} else if (packet_length < 1 << 8) {
+		lol = 1;
+	} else if (packet_length < 1 << 16) {
+		lol = 2;
+	} else {
+		lol = 3;
+	}
+	return lol;
+}
+
+uint8_t epp_calc_min_lol_payload(size_t payload_length) {
+	uint8_t lol = 0;
+	if (payload_length == 1) {
+		lol = 0;
+	} else if (payload_length < (1 << 8) - 1) {
+		lol = 1;
+	} else if (payload_length < (1 << 16) - 2) {
+		lol = 2;
+	} else {
+		lol = 3;
+	}
+	return lol;
+}
+
+size_t epp_serialize_packet(const epp_packet_t* packet, uint8_t* arr, size_t size) {
+	if (size < packet->size + (1 << packet->header.lol)) {
+		return 0;
+	}
+	const epp_header_t* epp_header = &packet->header;
+
+	epp_serialize_header(epp_header, arr, size);
+	memcpy(arr + (1 << packet->header.lol), packet->data, packet->size);
+	return packet->size + (1 << packet->header.lol);
+}
+
+int epp_extract_packet(epp_packet_t* packet, uint8_t* arr, size_t size) {
+	epp_header_t* epp_header = &packet->header;
+	size_t count = epp_extract_header(epp_header, arr, size);
+	if (!count || epp_header->packet_length > size) {
+		return -1;
+	}
+
+	packet->data = arr + count;
+	packet->size = epp_header->packet_length - count;
+
+	return 0;
+}
+
+
+int epp_serialize_header(const epp_header_t *epp_header, uint8_t *arr, int size) {
+	if (1 << epp_header->lol > size || epp_header->pvn != PVN) {
 		return 0;
 	}
 	int k = 0;
@@ -37,41 +89,6 @@ int epp_make_header(epp_header_t *epp_header, uint8_t *arr, int size) {
 		k += 1 << (epp_header->lol + 2);
 	}
 	return k / 8;
-}
-
-int epp_make_header_auto_length(epp_header_t *epp_header, uint8_t *arr, int size, uint32_t packet_length) {
-	epp_header->pvn = epp_pvn;
-
-	epp_header->lol = 0;
-	if (packet_length == 1) {
-		epp_header->lol = 0;
-	} else if (packet_length < 1 << 8) {
-		epp_header->lol = 1;
-	} else if (packet_length < 1 << 16) {
-		epp_header->lol = 2;
-	} else {
-		epp_header->lol = 3;
-	}
-	epp_header->packet_length = packet_length;
-
-	return epp_make_header(epp_header, arr, size);
-}
-int epp_make_header_auto_length2(epp_header_t *epp_header, uint8_t *arr, int size, uint32_t payload_length) {
-	epp_header->pvn = epp_pvn;
-
-	epp_header->lol = 0;
-	if (payload_length == 0) {
-		epp_header->lol = 0;
-	} else if (payload_length < (1 << 8) - 1) {
-		epp_header->lol = 1;
-	} else if (payload_length < (1 << 16) - 2) {
-		epp_header->lol = 2;
-	} else {
-		epp_header->lol = 3;
-	}
-	epp_header->packet_length = payload_length + (1 << epp_header->lol);
-
-	return epp_make_header(epp_header, arr, size);
 }
 
 
@@ -106,28 +123,21 @@ int epp_extract_header(epp_header_t *epp_header, const uint8_t *arr, int size) {
 		ccsds_endian_extract(arr, k, &epp_header->packet_length, 1 << (epp_header->lol + 2));
 		k += 1 << (epp_header->lol + 2);
 	} else {
-		epp_header->packet_length = 0;
+		epp_header->packet_length = 1;
 	}
 	return 1 << epp_header->lol;
 }
 
-void epp_set_empty_packet(uint8_t* data, size_t size) {
+void epp_serialize_empty_packet(uint8_t* data, size_t size) {
     if (size == 0) {
         return;
     }
     epp_header_t eh = {0};
     eh.epp_id = EPP_ID_IDLE;
-    
-    size_t count = epp_make_header_auto_length(&eh, data, size, size);
-    memcpy(data + count, 0, size - count);
-}
+    eh.pvn = PVN;
+	eh.lol = epp_calc_min_lol_packet(size);
+	eh.packet_length = size;
 
-int epp_extract_packet(epp_packet_t* frame, const uint8_t* data, size_t size) {
-	int count = epp_extract_header(&frame->header, data, size);
-    if (count == 0) {
-        return 1;
-    }
-    frame->data = data + count;
-    frame->size = size - count;
-    return 0;
+	size_t count = epp_serialize_header(&eh, data, size);
+    memset(data + count, 0, size - count);
 }

@@ -71,8 +71,11 @@ static bool try_get_size_from_packet(uint8_t* data, size_t data_size, size_t* si
 }
 
 static void call_back(vc_receive_t* vcr) {
-    if (vcr->buffer.size > 0 && extract_pvn(vcr->buffer.data[0]) == vcr->mapr.pvn) {
-        vcr->map_cb(vcr->map_cb_arg, vcr->buffer.data, vcr->buffer.size);
+    if (extract_pvn(vcr->buffer.data[0]) == vcr->mapr.pvn) {
+        epp_packet_t packet = {0};
+        if (!epp_extract_packet(&packet, vcr->buffer.data, vcr->buffer.size) && packet.header.epp_id != EPP_ID_IDLE) {
+            vcr->map_cb(vcr->map_cb_arg, vcr->buffer.data, vcr->buffer.size);
+        }
     }
 }
 
@@ -158,6 +161,11 @@ static void tfdz_mapp_to_data(vc_receive_t* vcr, const map_data_t* md, const vc_
                 return; 
             }
             vcr->buffer.size = packet_size;
+            if (packet_size == 0) {
+                //Мы получили фрейм с нулевым размером пакета. Такого не бывает.
+                clear_buffer(vcr);
+                return;   
+            }
         } 
         if (vcr->buffer.size > vcr->buffer.index) {
             //Пакет продолжится в следующем фрейме, а значит весь этот tfdf - часть этого пакета. На этом закончим.
@@ -165,9 +173,9 @@ static void tfdz_mapp_to_data(vc_receive_t* vcr, const map_data_t* md, const vc_
         }
         //Рамер пакета меньше (или равен) количеству данных. Значит, пакет собран, и мы можем обработать
         //его и попробовать собрать ещё пару пакетов
+        tfdz_index += vcr->buffer.size;
         call_back(vcr);
         clear_buffer(vcr);
-        tfdz_index += vcr->buffer.size;
     }
 }
 

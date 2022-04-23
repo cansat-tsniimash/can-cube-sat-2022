@@ -32,7 +32,7 @@ void map_force_finish(map_t* map) {
     if (map->map_type == MAP_TYPE_ACCESS) {
         assert(0 && "No, you cannot force MAPA");
     } else if (map->map_type == MAP_TYPE_PACKET) {
-        epp_set_empty_packet(map->tfdf.data + map->tfdf.index, map->tfdf.size - map->tfdf.index);
+        epp_serialize_empty_packet(map->tfdf.data + map->tfdf.index, map->tfdf.size - map->tfdf.index);
     } else {
         _map_octet_set_empty(map->tfdf.data + map->tfdf.index, map->tfdf.size - map->tfdf.index);
         map->pointer_fh_lo = (uint16_t)map->tfdf.index;
