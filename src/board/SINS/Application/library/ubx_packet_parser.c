@@ -21,29 +21,6 @@ uint16_t ubx_packet_payload_size(const uint8_t * packet_header)
 }
 
 
-uint16_t ubx_packet_payload_expected_size(ubx_pid_t pid)
-{
-	switch (pid)
-	{
-	case UBX_PID_NAV_SOL:
-		return 52;
-
-	case UBX_PID_TIM_TP:
-		return 16;
-
-	case UBX_PID_NAV_TIMEGPS:
-		return 16;
-
-	case UBX_PID_CFG_NACK:
-	case UBX_PID_CFG_ACK:
-		return 2;
-
-	default:
-		return 0;
-	}
-}
-
-
 uint16_t ubx_packet_checksum(const uint8_t * data_start, int data_size)
 {
 	uint8_t crc_a = 0, crc_b = 0;
@@ -193,6 +170,31 @@ static void _ubx_parse_mon_hw2(const uint8_t* payload, ubx_any_packet_t* packet_
 }
 
 
+static void _ubx_parse_mon_hw(const uint8_t* payload, ubx_any_packet_t* packet_)
+{
+	ubx_monhw_packet_t* packet = &packet_->packet.monhw;
+
+	packet->pinSel     = _read_u32(payload + 0);
+	packet->pinBank    = _read_u32(payload + 4);
+	packet->pinDir     = _read_u32(payload + 8);
+	packet->pinVal     = _read_u32(payload + 12);
+	packet->noisePerMS = _read_u16(payload + 16);
+	packet->agcCnt     = _read_u16(payload + 18);
+	packet->aStatus    =         *(payload + 20);
+	packet->aPower     =         *(payload + 21);
+	packet->flags      =         *(payload + 22);
+	packet->usedMask   = _read_u32(payload + 24);
+	for (uint8_t i = 0; i < 17; i++)
+	{
+		packet->VP[i] = *(payload + 28 + i);
+	}
+	packet->jamInd     =         *(payload + 45);
+	packet->pinIrq     = _read_u32(payload + 46);
+	packet->pullH      = _read_u32(payload + 52);
+	packet->pullL      = _read_u32(payload + 56);
+}
+
+
 static void _ubx_parse_rxm_svsi(const uint8_t* payload, ubx_any_packet_t* packet_)
 {
 	ubx_rxmsvsi_packet_t* packet = &packet_->packet.rxmsvsi;
@@ -298,6 +300,10 @@ int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet
 
 	case UBX_PID_MON_HW2:
 		_ubx_parse_mon_hw2(payload_start, packet);
+		break;
+
+	case UBX_PID_MON_HW:
+		_ubx_parse_mon_hw(payload_start, packet);
 		break;
 
 	case UBX_PID_RXM_SVSI:

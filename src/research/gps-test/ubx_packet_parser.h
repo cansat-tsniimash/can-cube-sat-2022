@@ -31,6 +31,7 @@ typedef enum ubx_pid_t
 	UBX_PID_CFG_NACK = 0x0500,
 	UBX_PID_CFG_ACK  = 0x0501,
 	UBX_PID_MON_HW2 = 0x0A0B,
+	UBX_PID_MON_HW = 0x0A09,
 	UBX_PID_RXM_SVSI = 0x0220,
 } ubx_pid_t;
 
@@ -176,6 +177,44 @@ typedef struct ubx_monhw2_packet_t
 	uint32_t postStatus;
 } ubx_monhw2_packet_t;
 
+//! Сообщение об ошибке в полученном конфигурационном пакете
+typedef struct ubx_monhw_packet_t
+{
+	/* Маска набора выводов в качестве периферии/PIO. */
+	uint32_t pinSel;
+	/* Маска набора выводов в качестве банков A/B */
+	uint32_t pinBank;
+	/* Маска набора выводов в качестве ввода/вывода (Input/Output, I/O) */
+	uint32_t pinDir;
+	/* Маска уровня выводов лог. 0 / лог. 1. */
+	uint32_t pinVal;
+	/* Уровень шума, измеренный ядром GPS */
+	uint16_t noisePerMS;
+	/* Монитор АРУ (AGC Monitor, считает SIGHI xor SIGLO, диапазон 0..8191). */
+	uint16_t agcCnt;
+	/* Статус машины состояний супервизора антенны (0=INIT, 1=DONTKNOW, 2=OK, 3=SHORT, 4=OPEN). */
+	uint8_t aStatus;
+	/* Текущее состояние питания антенны */
+	uint8_t aPower;
+	/* Флаги */
+	uint8_t flags;
+	/* Маска выводов, которые использует Virtual Pin Manager */
+	uint32_t usedMask;
+	/* Массив привязок каждого из 17 физических выводов. */
+	uint8_t VP[17];
+	/* Индикатор пропадания несущей (CW Jamming indicator), масштабированный
+	(0 = нет нарушения CW, 255 очень сильные нарушения CW). */
+	uint8_t jamInd;
+	/* Маска значения выводов, использующих PIO Irq */
+	uint32_t pinIrq;
+	/* Маска значения выводов, использующих верхний
+	подтягивающий резистор PIO (PullUp High). */
+	uint32_t pullH;
+	/* Маска значения выводов, использующих нижний
+	подтягивающий резистор PIO (PullUp Low). */
+	uint32_t pullL;
+} ubx_monhw_packet_t;
+
 //! SV Status Info
 typedef struct ubx_rxmsvsi_packet_t
 {
@@ -222,6 +261,7 @@ typedef struct ubx_any_packet_t
 		ubx_ack_packet_t ack;
 		ubx_nack_packet_t nack;
 		ubx_monhw2_packet_t monhw2;
+		ubx_monhw_packet_t monhw;
 		ubx_rxmsvsi_packet_t rxmsvsi;
 	} packet;
 } ubx_any_packet_t;
@@ -232,8 +272,6 @@ uint16_t ubx_packet_pid(const uint8_t * packet_header);
 //! Извлечение длины пакета из заголовка
 uint16_t ubx_packet_payload_size(const uint8_t * packet_header);
 
-//! Длина пакета, которая должна у него быть согласно протоколу
-uint16_t ubx_packet_payload_expected_size(ubx_pid_t pid);
 
 //! Вычисление контрольной суммы по ubx алгоритму
 uint16_t ubx_packet_checksum(const uint8_t * data_start, int data_size);
