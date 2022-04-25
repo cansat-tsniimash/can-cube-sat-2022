@@ -17,12 +17,11 @@
 #include <windows.h>
 
 #define ITS_SINS_GPS_UART_CYCLE_BUFFER_SIZE 10000
-#define ITS_SINS_GPS_UBX_SPARSER_BUFFER_SIZE 1000
+#define ITS_SINS_GPS_UBX_SPARSER_BUFFER_SIZE 10000
 
 #define ITS_SINS_GPS_CONFIGURE_ATTEMPTS 5
 #define ITS_SINS_GPS_CONFIGURE_TIMEOUT 10
 #define ITS_SINS_GPS_MAX_POLL_SIZE 10
-#define ITS_SINS_GPS_UBX_SPARSER_BUFFER_SIZE 100
 
 extern HANDLE hSerial;
 
@@ -249,7 +248,7 @@ static int _gps_configure_step_packet()
 
 	state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_WAIT_ACK;
 	state->sent_packet_pid = ubx_packet_pid(packet);
-	state->sent_packet_timestamp = time(NULL);
+	state->sent_packet_timestamp = (uint32_t)time(NULL);
 	state->sent_packet_attempt++;
 	return 0;
 }
@@ -289,7 +288,7 @@ static void _gps_configure_step()
 	case GPS_CFG_ACK_STATUS_WAIT_ACK:
 		// Ответ еще не пришел, проверяем таймаут
 		{
-			uint32_t now = time(NULL);
+			uint32_t now = (uint32_t)time(NULL);
 			if (now - state->sent_packet_timestamp > ITS_SINS_GPS_CONFIGURE_TIMEOUT)
 			{
 				// Ставим ошибку
@@ -362,7 +361,7 @@ int gps_poll(void)
 	}
 
 	_gps_configure_step();
-	return i;
+	return (int)i;
 }
 
 

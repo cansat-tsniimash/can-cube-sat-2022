@@ -28,6 +28,67 @@ void packet_callback(void* arg, const ubx_any_packet_t* packet)
     case UBX_PID_CFG_ACK:
         printf("UBX_PID_CFG_ACK\n");
         break;
+    case UBX_PID_MON_HW2:
+        printf("UBX_PID_MON_HW2\n");
+        break;
+        ubx_monhw2_packet_t* packet_monhw2 = &packet->packet.monhw2;
+        printf("ofsI = %d\n",       packet_monhw2->ofsI);
+        printf("magI = %d\n",       packet_monhw2->magI);
+        printf("ofsQ = %d\n",       packet_monhw2->ofsQ);
+        printf("magQ = %d\n",       packet_monhw2->magQ);
+        printf("cfgSource = %d\n",  packet_monhw2->cfgSource);
+        printf("lowLevCfg = %d\n",  packet_monhw2->lowLevCfg);
+        printf("postStatus = %d\n", packet_monhw2->postStatus);
+        break;
+    case UBX_PID_MON_HW:
+        printf("UBX_PID_MON_HW\n");
+        break;
+        ubx_monhw_packet_t* packet_monhw = &packet->packet.monhw;
+        printf("pinSel = %d\n",     packet_monhw->pinSel);
+        printf("pinBank = %d\n",    packet_monhw->pinBank);
+        printf("pinDir = %d\n",     packet_monhw->pinDir);
+        printf("pinVal = %d\n",     packet_monhw->pinVal);
+        printf("noisePerMS = %d\n", packet_monhw->noisePerMS);
+        printf("agcCnt = %d\n",     packet_monhw->agcCnt);
+        printf("aStatus = %d\n",    packet_monhw->aStatus);
+        printf("aPower = %d\n",     packet_monhw->aPower);
+        printf("flags = %d\n",      packet_monhw->flags);
+        printf("usedMask = %d\n",   packet_monhw->usedMask);
+        for (uint8_t i = 0; i < 17; i++)
+        {
+            printf("VP[%d] = %d\n", i, packet_monhw->VP[i]);
+        }
+        printf("jamInd = %d\n",     packet_monhw->jamInd);
+        printf("pinIrq = %d\n",     packet_monhw->pinIrq);
+        printf("pullH = %d\n",      packet_monhw->pullH);
+        printf("pullL = %d\n",      packet_monhw->pullL);
+        break;
+    case UBX_PID_RXM_SVSI:
+        printf("UBX_PID_RXM_SVSI\n");
+        ubx_rxmsvsi_packet_t* packet_rxmsvsi = &packet->packet.rxmsvsi;
+        printf("iTOW = %d\n", packet_rxmsvsi->iTOW);
+        printf("week = %d\n", packet_rxmsvsi->week);
+        printf("numVis = %d\n", packet_rxmsvsi->numVis);
+        printf("numSV = %d\n", packet_rxmsvsi->numSV);
+        ubx_rxmsvsi_SV_packet_t SV_packet;
+        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_mun(*packet_rxmsvsi); i++)
+        {
+            ubx_parse_rxm_svsi_SV(*packet_rxmsvsi, i, &SV_packet);
+            if (ubx_parse_rxm_svsi_SV_ura(SV_packet) < 15)
+            {
+                printf("svid = %d\n", SV_packet.svid);
+                printf("SV_ura = %d\n", ubx_parse_rxm_svsi_SV_ura(SV_packet));
+                printf("SV_healthy = %d\n", ubx_parse_rxm_svsi_SV_healthy(SV_packet));
+                printf("SV_ephVal = %d\n", ubx_parse_rxm_svsi_SV_ephVal(SV_packet));
+                printf("SV_almVal = %d\n", ubx_parse_rxm_svsi_SV_almVal(SV_packet));
+                printf("SV_notAvail = %d\n", ubx_parse_rxm_svsi_SV_notAvail(SV_packet));
+                printf("azim = %d\n", SV_packet.azim);
+                printf("elev = %d\n", SV_packet.elev);
+                printf("SV_almAge = %d\n", ubx_parse_rxm_svsi_SV_almAge(SV_packet));
+                printf("SV_ephAge = %d\n", ubx_parse_rxm_svsi_SV_ephAge(SV_packet));
+            }
+        }
+        break;
     default:
         printf("invalid packet\n");
         break;
@@ -80,7 +141,7 @@ int main()
             ReadFile(hSerial, &sReceivedChar, 1, &iSize, 0);
             if (iSize > 0)
             {
-                printf("%c", sReceivedChar);
+                //printf("%c", sReceivedChar);
                 gps_consume_byte((uint8_t)sReceivedChar);
             }
                 
