@@ -216,7 +216,7 @@ void mav_main_process_owntemp_message(mavlink_own_temp_t * msg)
 void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg, uint8_t comp_id)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("dosim : compid: %d, count_tick=%lu, delta time=%lu\n",
+	printf("dosim : compid: %d, count_tick=%"PRId64", delta time=%lu\n",
 			(int)comp_id, msg->count_tick, msg->delta_time
 	);
 
