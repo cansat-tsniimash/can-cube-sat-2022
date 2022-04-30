@@ -98,8 +98,8 @@ int mav_main_get_packet_from_imitator_ctl(mavlink_message_t * msg)
 void mav_main_process_bme_message(const mavlink_pld_bme280_data_t * msg, PLD_LOCATION location)
 {
 #ifdef PROCESS_TO_PRINTF
-    printf("int bme: t=%fC, p=%fpa, hum=%f%%, alt=%fm\n",
-            msg->temperature, msg->pressure, msg->humidity, msg->altitude
+    printf("bme %d: t=%fC, p=%fpa, hum=%f%%, alt=%fm\n",
+            (int)location, msg->temperature, msg->pressure, msg->humidity, msg->altitude
     );
 
     printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
@@ -123,8 +123,8 @@ void mav_main_process_bme_message(const mavlink_pld_bme280_data_t * msg, PLD_LOC
 void mav_main_process_ms5611_message(const mavlink_pld_ms5611_data_t * msg, PLD_LOCATION location)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("int ms5611: t=%fC, p=%fpa, alt=%f\n",
-			(float)msg->temperature, (float)msg->pressure, (float)msg->altitude
+	printf("ms5611 %d: t=%fC, p=%fpa, alt=%f\n",
+			(int)location, (float)msg->temperature, (float)msg->pressure, (float)msg->altitude
 	);
 
 	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
@@ -216,8 +216,11 @@ void mav_main_process_owntemp_message(mavlink_own_temp_t * msg)
 void mav_main_process_dosim_message(mavlink_pld_dosim_data_t * msg, uint8_t comp_id)
 {
 #ifdef PROCESS_TO_PRINTF
-	printf("dosim : compid: %d, count_tick=%"PRId64", delta time=%lu\n",
-			(int)comp_id, msg->count_tick, msg->delta_time
+	uint32_t tick_upper = (msg->count_tick & 0xFFFFFFFF00000000) >> 4*8;
+	uint32_t tick_lower = (msg->count_tick & 0x00000000FFFFFFFF) >> 0*8;
+	printf("dosim : compid: %d, count_tick_upper=%"PRId32","
+			"count_tick_lower=%"PRId32", delta time=%lu\n",
+			(int)comp_id, tick_upper, tick_lower, msg->delta_time
 	);
 
 	printf("time = 0x%08"PRIX32"%08"PRIX32", %08"PRIX32"\n",
