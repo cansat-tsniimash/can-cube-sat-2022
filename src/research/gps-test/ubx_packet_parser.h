@@ -248,6 +248,43 @@ typedef struct ubx_rxmsvsi_SV_packet_t
 } ubx_rxmsvsi_SV_packet_t;
 
 
+// Space Vehicle Information
+typedef struct ubx_navsvinfo_packet_t
+{
+	/* Время недели GPS для эпохи навигации (см. "6.2. Navigation Epoch" и
+	"6.3. Метки времени iTOW" [2] для получения дополнительной информации).*/
+	uint32_t iTOW;
+	/* Количество блоков данных, следующих далее, по одному блоку на канал.*/
+	uint8_t numCh;
+	/* Количество видимых спутников*/
+	uint8_t globalFlags;
+	/* Начало повторяющихся блоков(повторяются numSV раз) */
+	uint8_t* CHbuf_ptr;
+} ubx_navsvinfo_packet_t;
+
+
+// Space Vehicle Information информация о каналах
+typedef struct ubx_navsvinfo_CH_packet_t
+{
+	/* Номер канала*/
+	uint8_t chn;
+	/* Идентификатор спутника */
+	uint8_t svid;
+	/* Информационные флаги */
+	uint8_t flags;
+	/* Информационные флаги */
+	uint8_t quality;
+	/* Мощность сигнала */
+	uint8_t cno;
+	/* Возвышение */
+	int8_t elev;
+	/* Азимут */
+	int16_t azim;
+	/* Pseudo range residual in centimetres */
+	int32_t prRes;
+} ubx_navsvinfo_CH_packet_t;
+
+
 //! Структура, включающая данные любого пакета
 typedef struct ubx_any_packet_t
 {
@@ -263,6 +300,7 @@ typedef struct ubx_any_packet_t
 		ubx_monhw2_packet_t monhw2;
 		ubx_monhw_packet_t monhw;
 		ubx_rxmsvsi_packet_t rxmsvsi;
+		ubx_navsvinfo_packet_t navsvinfo;
 	} packet;
 } ubx_any_packet_t;
 
@@ -292,14 +330,14 @@ uint16_t ubx_make_pid(uint8_t packet_class, uint8_t packet_id);
 
 
 // Возвращает количество блоков данных, следующих далее, по одному блоку на спутник.
-uint8_t ubx_parse_rxm_svsi_SV_mun(ubx_rxmsvsi_packet_t packet);
+uint8_t ubx_parse_rxm_svsi_SV_num (ubx_rxmsvsi_packet_t packet);
 
 /* 
 	Функция читает из сообщения RXM-SVSI данные по конкретному спутнику
 	Аргументы:
 	packet    - пакет формата RXM-SVSI
 	SV_index  - индекс спутника (от 0 до numSV-1). Количество спутников может быть прочитано
-	функцией ubx_parse_rxm_svsi_SV_mun
+	функцией ubx_parse_rxm_svsi_SV_num
 	SV_packet - указатель на структуру, в которую будет записан пакет.
 	Возвращает: 0 если чтение произошло успеншно и EADDRNOTAVAIL если индекс был задан неверно.
 */
@@ -326,6 +364,40 @@ uint8_t ubx_parse_rxm_svsi_SV_almAge(ubx_rxmsvsi_SV_packet_t SV_packet);
 // Возвращает возраст EPH (эфемериды) в часах со смещением 4 из блока данных о спутнике пакета RXM-SVSI
 uint8_t ubx_parse_rxm_svsi_SV_ephAge(ubx_rxmsvsi_SV_packet_t SV_packet);
 
+
+// Возвращает количество блоков данных, следующих далее, по одному блоку на канал.
+uint8_t ubx_parse_nav_svinfo_CH_num(ubx_navsvinfo_packet_t packet);
+
+/*
+	Функция читает из сообщения NAV-SVINFO данные по конкретному каналу
+	Аргументы:
+	packet    - пакет формата NAV-SVINFO
+	SV_index  - индекс канала (от 0 до numCh-1). Количество каналов может быть прочитано
+	функцией ubx_parse_nav_svinfo_CH_num
+	CH_packet - указатель на структуру, в которую будет записан пакет.
+	Возвращает: 0 если чтение произошло успеншно и EADDRNOTAVAIL если индекс был задан неверно.
+*/
+int ubx_parse_nav_svinfo_CH(ubx_navsvinfo_packet_t packet, uint8_t CH_index, ubx_navsvinfo_CH_packet_t* CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_chipGen(ubx_navsvinfo_packet_t packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_svUsed(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_diffCorr(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitAvail(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitEph(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_unhealthy(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitAlm(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitAop(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_smoothed(ubx_navsvinfo_CH_packet_t CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_quality(ubx_navsvinfo_CH_packet_t CH_packet);
 
 //! Разбор тела пакета
 int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet);
