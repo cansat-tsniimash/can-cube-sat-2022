@@ -240,11 +240,12 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 			struct timeval tv;
 			time_svc_world_get_time(&tv);
 
-			mavlink_sins_navsvinfo_t msg_sins_navsvinfo;
-			msg_sins_navsvinfo.time_s = tv.tv_sec;
-			msg_sins_navsvinfo.time_us = tv.tv_usec;
-			msg_sins_navsvinfo.time_steady = HAL_GetTick();
-			msg_sins_navsvinfo.num_ch = packet->packet.rxmsvsi.numVis;
+			mavlink_sins_rxmsvsi_t msg_sins_rxmsvsi;
+			msg_sins_rxmsvsi.time_s      = tv.tv_sec;
+			msg_sins_rxmsvsi.time_us     = tv.tv_usec;
+			msg_sins_rxmsvsi.time_steady = HAL_GetTick();
+			msg_sins_rxmsvsi.num_vis     = packet->packet.rxmsvsi.numVis;
+			msg_sins_rxmsvsi.num_ch      = packet->packet.rxmsvsi.numSV;
 			ubx_rxmsvsi_SV_packet_t ubx_rxmsvsi_SV_packet_top[4];
 			ubx_rxmsvsi_SV_packet_t ubx_rxmsvsi_SV_packet;
 	        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_num((ubx_rxmsvsi_packet_t)packet->packet.rxmsvsi); i++)
@@ -256,39 +257,87 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 	        	}
 	        	else
 	        	{
-	        		for (uint8_t j = 0; i < 4, i++)
+	        		for (uint8_t j = 0; j < 4, j++)
 	        		{
-	        			if (ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_top[i]) < ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet))
+	        			if (ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_top[j]) < ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet))
 	        			{
-	        				ubx_rxmsvsi_SV_packet_top[i] = ubx_rxmsvsi_SV_packet;
+	        				ubx_rxmsvsi_SV_packet_top[j] = ubx_rxmsvsi_SV_packet;
 	        				break;
 	        			}
 	        		}
 	        	}
 	        }
-			msg_sins_navsvinfo.svid_0 = ubx_rxmsvsi_SV_packet_top[0].svid;
-			msg_sins_navsvinfo.flags_0 = ubx_rxmsvsi_SV_packet_top[0].svFlag;
-			msg_sins_navsvinfo.quality_0 = 0; // Василий, откуда ты это взял?
-			msg_sins_navsvinfo.cno_0 = 0; // и это тоже
-			msg_sins_navsvinfo.svid_1 = ubx_rxmsvsi_SV_packet_top[1].svid;
-			msg_sins_navsvinfo.flags_1 = ubx_rxmsvsi_SV_packet_top[1].svFlag;
-			msg_sins_navsvinfo.quality_1 = 0; // Василий, откуда ты это взял?
-			msg_sins_navsvinfo.cno_1 = 0; // и это тоже
-			msg_sins_navsvinfo.svid_2 = ubx_rxmsvsi_SV_packet_top[2].svid;
-			msg_sins_navsvinfo.flags_2 = ubx_rxmsvsi_SV_packet_top[2].svFlag;
-			msg_sins_navsvinfo.quality_2 = 0; // Василий, откуда ты это взял?
-			msg_sins_navsvinfo.cno_2 = 0; // и это тоже
-			msg_sins_navsvinfo.svid_3 = ubx_rxmsvsi_SV_packet_top[3].svid;
-			msg_sins_navsvinfo.flags_3 = ubx_rxmsvsi_SV_packet_top[3].svFlag;
-			msg_sins_navsvinfo.quality_3 = 0; // Василий, откуда ты это взял?
-			msg_sins_navsvinfo.cno_3 = 0; // и это тоже
+			msg_sins_rxmsvsi.svid_0   = ubx_rxmsvsi_SV_packet_top[0].svid;
+			msg_sins_rxmsvsi.svflag_0 = ubx_rxmsvsi_SV_packet_top[0].svFlag;
+			msg_sins_rxmsvsi.age_0    = ubx_rxmsvsi_SV_packet_top[0].age;
+			msg_sins_rxmsvsi.svid_1   = ubx_rxmsvsi_SV_packet_top[1].svid;
+			msg_sins_rxmsvsi.svflag_1 = ubx_rxmsvsi_SV_packet_top[1].svFlag;
+			msg_sins_rxmsvsi.age_1    = ubx_rxmsvsi_SV_packet_top[1].age;
+			msg_sins_rxmsvsi.svid_2   = ubx_rxmsvsi_SV_packet_top[2].svid;
+			msg_sins_rxmsvsi.svflag_2 = ubx_rxmsvsi_SV_packet_top[2].svFlag;
+			msg_sins_rxmsvsi.age_2    = ubx_rxmsvsi_SV_packet_top[2].age;
+			msg_sins_rxmsvsi.svid_3   = ubx_rxmsvsi_SV_packet_top[3].svid;
+			msg_sins_rxmsvsi.svflag_3 = ubx_rxmsvsi_SV_packet_top[3].svFlag;
+			msg_sins_rxmsvsi.age_3    = ubx_rxmsvsi_SV_packet_top[3].age;
 
 			mavlink_message_t msg;
 			mavlink_msg_sins_navsvinfo_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_navsvinfo);
 			uplink_write_mav(&msg);
 			break;
 		}
+	case UBX_PID_NAV_SVINFO:
+		{
+			struct timeval tv;
+			time_svc_world_get_time(&tv);
 
+			mavlink_sins_navsvinfo_t msg_sins_navsvinfo;
+			msg_sins_navsvinfo.time_s      = tv.tv_sec;
+			msg_sins_navsvinfo.time_us     = tv.tv_usec;
+			msg_sins_navsvinfo.time_steady = HAL_GetTick();
+			msg_sins_navsvinfo.num_ch      = packet->packet.navsvinfo.numCh;
+			ubx_navsvinfo_CH_packet_t ubx_navsvinfo_CH_packet_top[4];
+			ubx_navsvinfo_CH_packet_t ubx_navsvinfo_CH_packet;
+	        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_num((ubx_navsvinfo_packet_t)packet->packet.navsvinfo); i++)
+	        {
+	        	ubx_parse_rxm_svsi_SV((ubx_navsvinfo_packet_t)packet->packet.navsvinfo, i, &ubx_navsvinfo_CH_packet);
+	        	if (i < 4)
+	        	{
+	        		ubx_navsvinfo_CH_packet_top[i] = ubx_navsvinfo_CH_packet;
+	        	}
+	        	else
+	        	{
+	        		for (uint8_t j = 0; j < 4, j++)
+	        		{
+	        			if (ubx_navsvinfo_CH_packet_top[j].cno < ubx_navsvinfo_CH_packet.cno)
+	        			{
+	        				ubx_navsvinfo_CH_packet_top[j] = ubx_navsvinfo_CH_packet;
+	        				break;
+	        			}
+	        		}
+	        	}
+	        }
+			msg_sins_navsvinfo.svid_0    = ubx_rxmsvsi_SV_packet_top[0].svid;
+			msg_sins_navsvinfo.flags_0   = ubx_rxmsvsi_SV_packet_top[0].flags;
+			msg_sins_navsvinfo.quality_0 = ubx_rxmsvsi_SV_packet_top[0].quality;
+			msg_sins_navsvinfo.cno_0     = ubx_rxmsvsi_SV_packet_top[0].cno;
+			msg_sins_navsvinfo.svid_1    = ubx_rxmsvsi_SV_packet_top[1].svid;
+			msg_sins_navsvinfo.flags_1   = ubx_rxmsvsi_SV_packet_top[1].flags;
+			msg_sins_navsvinfo.quality_1 = ubx_rxmsvsi_SV_packet_top[1].quality;
+			msg_sins_navsvinfo.cno_1     = ubx_rxmsvsi_SV_packet_top[1].cno;
+			msg_sins_navsvinfo.svid_2    = ubx_rxmsvsi_SV_packet_top[2].svid;
+			msg_sins_navsvinfo.flags_2   = ubx_rxmsvsi_SV_packet_top[2].flags;
+			msg_sins_navsvinfo.quality_2 = ubx_rxmsvsi_SV_packet_top[2].quality;
+			msg_sins_navsvinfo.cno_2     = ubx_rxmsvsi_SV_packet_top[2].cno;
+			msg_sins_navsvinfo.svid_3    = ubx_rxmsvsi_SV_packet_top[3].svid;
+			msg_sins_navsvinfo.flags_3   = ubx_rxmsvsi_SV_packet_top[3].flags;
+			msg_sins_navsvinfo.quality_3 = ubx_rxmsvsi_SV_packet_top[3].quality;
+			msg_sins_navsvinfo.cno_3     = ubx_rxmsvsi_SV_packet_top[3].cno;
+
+			mavlink_message_t msg;
+			mavlink_msg_sins_navsvinfo_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_navsvinfo);
+			uplink_write_mav(&msg);
+			break;
+		}
 	default:
 		break;
 

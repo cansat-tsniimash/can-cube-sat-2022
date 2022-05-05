@@ -33,6 +33,7 @@ typedef enum ubx_pid_t
 	UBX_PID_MON_HW2 = 0x0A0B,
 	UBX_PID_MON_HW = 0x0A09,
 	UBX_PID_RXM_SVSI = 0x0220,
+	UBX_PID_NAV_SVINFO = 0x0130,
 } ubx_pid_t;
 
 
