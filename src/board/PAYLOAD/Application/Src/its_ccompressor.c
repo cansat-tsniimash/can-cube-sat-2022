@@ -43,17 +43,20 @@ static int ccontrol_pump_control(ccontrol_hal_t *hal_, bool enable)
 	its_ccontrol_hal_t * const hal = (its_ccontrol_hal_t *) hal_;
 
 	HAL_GPIO_WritePin(COMPR_ON_GPIO_Port, COMPR_ON_Pin, enable);
+	if (hal->pump_running != enable)
+	{
+		if (enable)
+		{
+			hal->pump_on_cnt++;
+			hal->pump_on_ts = HAL_GetTick();
+		}
+		else
+		{
+			hal->pump_off_cnt++;
+			hal->pump_off_ts = HAL_GetTick();
+		}
+	}
 	hal->pump_running = enable;
-	if (enable)
-	{
-		hal->pump_on_cnt++;
-		hal->pump_on_ts = HAL_GetTick();
-	}
-	else
-	{
-		hal->pump_off_cnt++;
-		hal->pump_off_ts = HAL_GetTick();
-	}
 
 	return 0;
 }
@@ -62,20 +65,21 @@ static int ccontrol_pump_control(ccontrol_hal_t *hal_, bool enable)
 static int ccontrol_valve_control(ccontrol_hal_t *hal_, bool open)
 {
 	its_ccontrol_hal_t * const hal = (its_ccontrol_hal_t *) hal_;
-
 	HAL_GPIO_WritePin(VALVE_ON_GPIO_Port, VALVE_ON_Pin, open);
+	if (hal->valve_open != open)
+	{
+		if (open)
+		{
+			hal->valve_open_cnt++;
+			hal->valve_open_ts = HAL_GetTick();
+		}
+		else
+		{
+			hal->valve_close_cnt++;
+			hal->valve_close_ts = HAL_GetTick();
+		}
+	}
 	hal->valve_open = open;
-
-	if (open)
-	{
-		hal->valve_open_cnt++;
-		hal->valve_open_ts = HAL_GetTick();
-	}
-	else
-	{
-		hal->valve_close_cnt++;
-		hal->valve_close_ts = HAL_GetTick();
-	}
 
 	return 0;
 }
