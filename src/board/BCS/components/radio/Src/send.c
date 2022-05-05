@@ -57,7 +57,8 @@ static int _radio_init(radio_t * server)
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_8,
+			//.spreading_factor = SX126X_LORA_SF_8,
+			.spreading_factor = SX126X_LORA_SF_5,
 			.bandwidth = SX126X_LORA_BW_250,
 			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,

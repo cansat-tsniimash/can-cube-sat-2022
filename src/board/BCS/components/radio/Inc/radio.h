@@ -42,13 +42,15 @@
 #define _DIV_TRUNC(a, b) (((a) + (b) - 1) / (b))
 
 #define RADIO_TX_PERIOD (4000 * 1000)
-#define RADIO_RX_PERIOD (2000 * 1000)
+//#define RADIO_RX_PERIOD (2000 * 1000)
+#define RADIO_RX_PERIOD (100 * 1000)
 #define RADIO_START_ANYWAY (10000 * 1000)
 /*
  * Это поле не меняется автоматически!!! См. _radio_init
  */
 #warning "Это поле меняется вручную в зависисимости от периода отправки сообщений"
-#define RADIO_TX_COUNT 7
+//#define RADIO_TX_COUNT 7
+#define RADIO_TX_COUNT (7*8)
 
 typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
