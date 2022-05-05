@@ -247,7 +247,7 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 			msg_sins_navsvinfo.num_ch = packet->packet.rxmsvsi.numVis;
 			ubx_rxmsvsi_SV_packet_t ubx_rxmsvsi_SV_packet_top[4];
 			ubx_rxmsvsi_SV_packet_t ubx_rxmsvsi_SV_packet;
-	        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_mun((ubx_rxmsvsi_packet_t)packet->packet.rxmsvsi); i++)
+	        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_num((ubx_rxmsvsi_packet_t)packet->packet.rxmsvsi); i++)
 	        {
 	        	ubx_parse_rxm_svsi_SV((ubx_rxmsvsi_packet_t)packet->packet.rxmsvsi, i, &ubx_rxmsvsi_SV_packet);
 	        	if (i < 4)
