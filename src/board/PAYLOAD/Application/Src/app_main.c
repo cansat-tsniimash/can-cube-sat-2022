@@ -26,7 +26,7 @@
 
 #include "commissar.h"
 
-//#define ITS_PLD_COMPRESSOR_TESTS
+#define ITS_PLD_COMPRESSOR_TESTS
 
 //! БМЕ принципиально не показывает давление ниже 30ы 0000
 //! Поэтому с этого момента мы его показания для управления компрессором не используем
@@ -154,8 +154,8 @@ int app_main()
 #ifdef ITS_PLD_COMPRESSOR_TESTS
 		// грязный хак для теста компрессора
 		const uint32_t compressor_period = 40*1000;
-		const uint32_t compressor_on_duration = 20*1000;
-		const uint32_t valve_close_duration = compressor_on_duration + 15*1000;
+		const uint32_t compressor_on_duration = 10*1000;
+		const uint32_t valve_close_duration = compressor_on_duration + 25*1000;
 
 		static uint32_t compressor_power_on = 0 + 10*1000; // 10 секунд перед первым пуском
 		static uint32_t compressor_power_off = 0;
@@ -215,7 +215,7 @@ int app_main()
 		// Проверяем входящие пакеты
 		_process_input_packets();
 		// Управляем температурой ДНК
-		dna_control_work();
+		//dna_control_work();
 		// Управляем компрессором
 		its_ccontrol_work();
 		// Аккамулируем значения дозиметра
@@ -296,7 +296,7 @@ int app_main()
 				mav_main_process_owntemp_message(&own_temp_msg);
 		}
 
-
+		/*
 		if (tock % PACKET_PERIOD_DNA == PACKET_OFFSET_DNA)
 		{
 			mavlink_pld_dna_data_t pld_dna_msg = {0};
@@ -304,6 +304,7 @@ int app_main()
 			if (0 == rc)
 				mav_main_process_dna_message(&pld_dna_msg);
 		}
+		*/
 
 		if (tock % PACKET_PERIOD_DOSIM_MOMENTARY == PACKET_OFFSET_DOSIM_MOMENTARY)
 		{
