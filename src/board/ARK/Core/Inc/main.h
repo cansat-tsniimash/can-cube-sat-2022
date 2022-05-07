@@ -71,35 +71,59 @@ int tmain(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define BMS5_Pin GPIO_PIN_1
-#define BMS5_GPIO_Port GPIOA
-#define BMS6_Pin GPIO_PIN_2
-#define BMS6_GPIO_Port GPIOA
-#define BMS3_Pin GPIO_PIN_3
-#define BMS3_GPIO_Port GPIOA
-#define BMS4_Pin GPIO_PIN_4
+#define BMS5_Pin GPIO_PIN_13
+#define BMS5_GPIO_Port GPIOC
+#define BMS6_Pin GPIO_PIN_14
+#define BMS6_GPIO_Port GPIOC
+#define BMS3_Pin GPIO_PIN_15
+#define BMS3_GPIO_Port GPIOC
+#define BMS4_Pin GPIO_PIN_0
 #define BMS4_GPIO_Port GPIOA
-#define BMS1_Pin GPIO_PIN_5
+#define BMS1_Pin GPIO_PIN_1
 #define BMS1_GPIO_Port GPIOA
-#define BMS2_Pin GPIO_PIN_6
+#define BMS2_Pin GPIO_PIN_2
 #define BMS2_GPIO_Port GPIOA
-#define OW_Pin GPIO_PIN_7
+#define TIME_Pin GPIO_PIN_3
+#define TIME_GPIO_Port GPIOA
+#define OW_Pin GPIO_PIN_5
 #define OW_GPIO_Port GPIOA
-#define PGOOD1_Pin GPIO_PIN_0
-#define PGOOD1_GPIO_Port GPIOB
-#define PGOOD2_Pin GPIO_PIN_1
-#define PGOOD2_GPIO_Port GPIOB
-#define DPC_RST_Pin GPIO_PIN_14
-#define DPC_RST_GPIO_Port GPIOB
-#define DPD_RST_Pin GPIO_PIN_15
-#define DPD_RST_GPIO_Port GPIOB
-#define LED_Pin GPIO_PIN_5
+#define ROZE1_Pin GPIO_PIN_7
+#define ROZE1_GPIO_Port GPIOA
+#define LED_Pin GPIO_PIN_0
 #define LED_GPIO_Port GPIOB
-#define TIME_Pin GPIO_PIN_6
-#define TIME_GPIO_Port GPIOB
-#define TIME_EXTI_IRQn EXTI9_5_IRQn
-#define I2C_INT_Pin GPIO_PIN_7
-#define I2C_INT_GPIO_Port GPIOB
+#define ROZE4_Pin GPIO_PIN_1
+#define ROZE4_GPIO_Port GPIOB
+#define SCL_Pin GPIO_PIN_10
+#define SCL_GPIO_Port GPIOB
+#define SDA_Pin GPIO_PIN_11
+#define SDA_GPIO_Port GPIOB
+#define PGS_D_Pin GPIO_PIN_13
+#define PGS_D_GPIO_Port GPIOB
+#define PFI_D_Pin GPIO_PIN_14
+#define PFI_D_GPIO_Port GPIOB
+#define PGB_D_Pin GPIO_PIN_15
+#define PGB_D_GPIO_Port GPIOB
+#define INT_D_Pin GPIO_PIN_8
+#define INT_D_GPIO_Port GPIOA
+#define ROZE3_Pin GPIO_PIN_11
+#define ROZE3_GPIO_Port GPIOA
+#define DC_DC_Pin GPIO_PIN_15
+#define DC_DC_GPIO_Port GPIOA
+#define ROZE2_Pin GPIO_PIN_3
+#define ROZE2_GPIO_Port GPIOB
+#define INT_C_Pin GPIO_PIN_4
+#define INT_C_GPIO_Port GPIOB
+#define INT_C_EXTI_IRQn EXTI4_IRQn
+#define PGS_C_Pin GPIO_PIN_5
+#define PGS_C_GPIO_Port GPIOB
+#define PFI_C_Pin GPIO_PIN_6
+#define PFI_C_GPIO_Port GPIOB
+#define PGB_C_Pin GPIO_PIN_7
+#define PGB_C_GPIO_Port GPIOB
+#define SCLTM_Pin GPIO_PIN_8
+#define SCLTM_GPIO_Port GPIOB
+#define SDATM_Pin GPIO_PIN_9
+#define SDATM_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
@@ -109,5 +133,3 @@ int tmain(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
