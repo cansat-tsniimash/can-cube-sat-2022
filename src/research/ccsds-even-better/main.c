@@ -2,7 +2,9 @@
 #include <time.h>
 #include <ctype.h>
 
-#include "ccsds/uslp/uslp_init.h"
+#include "ccsds/uslp/uslp.h"
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 void print_byte_arr(const uint8_t* arr, size_t size) {
     for (size_t i = 0; i < size; i++) {
@@ -131,7 +133,7 @@ int main() {
         epp_packet.header.pvn = PVN_EP;
         epp_packet.header.epp_id = EPP_ID_USER_DEFINED;
         epp_packet.header.lol = epp_calc_min_lol_packet(map_config.tfdz_capacity);
-        epp_packet.size = min(packet_size - (1 << epp_packet.header.lol), sizeof(data) - data_index);
+        epp_packet.size = MIN(packet_size - (1 << epp_packet.header.lol), sizeof(data) - data_index);
         epp_packet.header.packet_length = epp_packet.size + (1 << epp_packet.header.lol);
         sap_epp_send(&sap, &epp_packet);
 
