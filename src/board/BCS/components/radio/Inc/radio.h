@@ -8,7 +8,7 @@
 #ifndef COMPONENTS_RADIO_INC_RADIO_H_
 #define COMPONENTS_RADIO_INC_RADIO_H_
 
-
+#include "ring_buffer.h"
 #include "sx126x_drv.h"
 #include "mavlink_help2.h"
 
@@ -30,8 +30,9 @@
 #define RADIO_DEFAULT_PERIOD 30
 #define RADIO_SLEEP_DEFAULT 2000
 
-
-
+#define RADIO_TX_COUNT_LOWER_BOUND 30
+#define RADIO_BUFFERED_COUNT 5
+#define RADIO_WAIT_PERIOD_START 10 //ms
 #define RADIO_PACKET_SIZE ITS_RADIO_PACKET_SIZE
 #define RADIO_RX_TIMEDOUT_LIMIT 5
 #define RADIO_TX_TIMEOUT_MS (10000)
@@ -50,7 +51,7 @@
  */
 #warning "Это поле меняется вручную в зависисимости от периода отправки сообщений"
 //#define RADIO_TX_COUNT 7
-#define RADIO_TX_COUNT (7*8)
+#define RADIO_TX_COUNT 400
 
 typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
@@ -81,9 +82,9 @@ typedef struct radio_t {
 	mav_buf_t mav_buf;
 
 	radio_buf_t radio_buf[RADIO_TX_COUNT];
-	int radio_buf_to_write;
-	int radio_buf_to_read;
+	ring_buffer_t radio_ring_buffer;
 
+	uint32_t wait_period;
 
 	uint8_t mavlink_chan;
 	uint32_t msg_count;

@@ -19,7 +19,6 @@
 #define RADIO_SLEEP_AWAKE_LEGNTH 300 //ms
 #define RADIO_SLEEP_SLEEP_LENGTH 4000 //ms
 #define MAX_ERRORS 5
-#define RADIO_PACKET_PERIOD ((RADIO_TX_PERIOD + RADIO_RX_PERIOD) / RADIO_TX_COUNT)
 
 static radio_t radio_server;
 
@@ -181,6 +180,9 @@ typedef struct {
 	uint32_t error_count_tx;
 	uint32_t error_count_rx;
 	radio_trans_dir_state_t dir_state;
+
+	uint32_t last_left_count;
+	uint32_t tx_count;
 } radio_private_state_t;
 
 
@@ -229,6 +231,7 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 			state->error_count_tx++;
 			log_error("TX TIMED OUT!");
 		} else {
+			state->tx_count++;
 			state->error_count_tx = 0;
 			log_info("tx done");
 			rbuf_pull(server);
@@ -248,7 +251,25 @@ static void _update_state(radio_private_state_t *state, radio_t *server, int64_t
 		log_info("START TX0");
 		state->dir_state = RS_TX;
 		state->period_start = now;
-		rbuf_reset(server);
+
+		uint32_t cur_left_count = ring_buffer_get_avail(&server->radio_ring_buffer);
+		uint32_t last_left_count = state->last_left_count;
+
+		uint32_t tx_count = RADIO_TX_COUNT_LOWER_BOUND;
+		if (tx_count < state->tx_count) {
+			tx_count = state->tx_count;
+		}
+		uint32_t wait_period = 0;
+		int32_t expected_left_count_next = cur_left_count - tx_count;
+		if (expected_left_count_next >= RADIO_BUFFERED_COUNT) {
+			wait_period = 0xFFFFFFFF;
+		} else {
+			uint32_t to_fill = RADIO_BUFFERED_COUNT - expected_left_count_next;
+			wait_period = (RADIO_TX_PERIOD + RADIO_RX_PERIOD) / to_fill;
+		}
+		server->wait_period = wait_period;
+		state->tx_count = 0;
+
 	}
 	if (state->dir_state == RS_TX && RADIO_TX_PERIOD < now - state->period_start && state->packet_done) {
 		log_info("START RX");
@@ -335,6 +356,7 @@ static void radio_loop(void *arg) {
 	state.packet_done = 1;
 	int64_t now = esp_timer_get_time();
 
+	server->wait_period = RADIO_WAIT_PERIOD_START;
 	while (1) {
 		now = esp_timer_get_time();
 		mavlink_message_t incoming_msg = {0};
@@ -343,7 +365,7 @@ static void radio_loop(void *arg) {
 			// Если мы получили сообщение - складываем в его хранилище
 			update_msg(&incoming_msg);
 		}
-		if (RADIO_PACKET_PERIOD < now - state.last_added) {
+		if (server->wait_period < now - state.last_added) {
 			if (rbuf_fill(server)) {
 				state.last_added = now;
 			}
@@ -415,6 +437,7 @@ void radio_send_init(void) {
 		radio_server.radio_buf[i].capacity = ITS_RADIO_PACKET_SIZE;
 		radio_server.radio_buf[i].size = ITS_RADIO_PACKET_SIZE;
 	}
+	ring_buffer_init(&radio_server.radio_ring_buffer, radio_server.radio_buf, RADIO_TX_COUNT, sizeof(radio_buf_t));
 
 	xTaskCreatePinnedToCore(radio_task, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
 

@@ -268,13 +268,13 @@ end:
 
 
 static int rbuf_fill(radio_t * server) {
-	log_trace("rbuf_fill %d %d" ,server->packet_count, server->radio_buf_to_write);
-	if (server->radio_buf_to_write >= RADIO_TX_COUNT) {
+	log_trace("rbuf_fill %d %d", server->radio_ring_buffer.put, server->radio_ring_buffer.get);
+	if (ring_buffer_put_avail(&server->radio_ring_buffer) == 0) {
 		return 0;
 	}
-	radio_buf_t *buf = &server->radio_buf[server->radio_buf_to_write];
+	radio_buf_t *buf = ring_buffer_put(&server->radio_ring_buffer);
+	ring_buffer_put_advance(&server->radio_ring_buffer);
 	buf->index = 0;
-	server->radio_buf_to_write++;
 	uint16_t count = server->packet_count;
 
 	memcpy(buf->buf, (uint8_t *)&count, sizeof(count));
@@ -316,19 +316,23 @@ static int rbuf_fill(radio_t * server) {
 }
 
 static radio_buf_t* rbuf_get(radio_t * server) {
-	log_trace("rbuf_get %d", server->radio_buf_to_read);
-	assert(server->radio_buf_to_read < RADIO_TX_COUNT);
-	return &server->radio_buf[server->radio_buf_to_read];
+	log_trace("rbuf_get %d", server->radio_ring_buffer.get);
+	assert(ring_buffer_get_avail(&server->radio_ring_buffer) > 0);
+	return ring_buffer_get(&server->radio_ring_buffer);
 }
 static void rbuf_pull(radio_t * server) {
-	log_trace("rbuf_pull %d", server->radio_buf_to_read);
-	server->radio_buf_to_read++;
+	log_trace("rbuf_pull %d", server->radio_ring_buffer.get);
+
+	ring_buffer_get_advance(&server->radio_ring_buffer);
 }
 
-static void rbuf_reset(radio_t * server) {
-	log_trace("rbuf_reset %d %d", server->radio_buf_to_read, server->radio_buf_to_write);
-	server->radio_buf_to_read = 0;
-	server->radio_buf_to_write = 0;
+static void rbuf_reset(radio_t* server) {
+	log_trace("radio reset");
+	server->wait_period = RADIO_WAIT_PERIOD_START;
+	server->radio_ring_buffer.put = 0;
+
 }
+
+
 
 #endif /* COMPONENTS_RADIO_INC_PRIVATE_RADIO_HELP_H_ */
