@@ -57,16 +57,19 @@ static int _radio_init(radio_t * server)
 
 			// Параметры пакетирования
 			//.spreading_factor = SX126X_LORA_SF_8,
-			.spreading_factor = SX126X_LORA_SF_5,
-			.bandwidth = SX126X_LORA_BW_250,
-			.coding_rate = SX126X_LORA_CR_4_8,
+			.spreading_factor = SX126X_LORA_SF_6,
+			//.bandwidth = SX126X_LORA_BW_250,
+			.bandwidth = SX126X_LORA_BW_500,
+			//.coding_rate = SX126X_LORA_CR_4_8,
+			.coding_rate = SX126X_LORA_CR_4_5,
 			.ldr_optimizations = false,
 	};
 
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 8,
+			//.preamble_length = 8,
+			.preamble_length = 50,
 			.explicit_header = true,
 			.payload_length = RADIO_PACKET_SIZE,
 			.use_crc = true,

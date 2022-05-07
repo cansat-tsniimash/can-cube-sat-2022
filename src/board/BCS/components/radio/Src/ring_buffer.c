@@ -5,7 +5,7 @@
  *      Author: sereshotes
  */
 
-
+#include <assert.h>
 #include "ring_buffer.h"
 
 
@@ -25,7 +25,7 @@ size_t ring_buffer_put_avail(ring_buffer_t* rb) {
 	return (rb->count + rb->get - rb->put) % rb->count;
 }
 size_t ring_buffer_get_avail(ring_buffer_t* rb) {
-	if (rb->put == rb->get) {s
+	if (rb->put == rb->get) {
 		return rb->is_full ? rb->count : 0;
 	}
 	return (rb->count + rb->put - rb->get) % rb->count;

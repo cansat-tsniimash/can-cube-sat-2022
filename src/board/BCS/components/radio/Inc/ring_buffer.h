@@ -8,7 +8,7 @@
 #ifndef COMPONENTS_RADIO_INC_RING_BUFFER_H_
 #define COMPONENTS_RADIO_INC_RING_BUFFER_H_
 
-#include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 typedef struct _ring_buffer_t {
