@@ -11,7 +11,6 @@
 
 #include "driver/gpio.h"
 #include "hal/i2c_types.h"
-#include "soc/i2c_caps.h"
 
 #include "lwip/ip_addr.h"
 #include <esp_types.h>
