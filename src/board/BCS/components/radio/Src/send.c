@@ -8,6 +8,7 @@
 
 #include "radio.h"
 #include "../Inc_private/radio_help.h"
+#include "../Inc_private/timing_calc.h"
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
@@ -163,30 +164,6 @@ static void _save_logs(radio_t *server) {
 	}
 }
 
-typedef enum {
-	RS_NONE,
-	RS_TX,
-	RS_RX,
-} radio_trans_dir_state_t;
-
-
-
-
-
-
-typedef struct {
-	int packet_done;
-	int i_really_want_to_start_now;
-	int64_t last_sent;
-	int64_t last_added;
-	int64_t period_start;
-	uint32_t error_count_tx;
-	uint32_t error_count_rx;
-	radio_trans_dir_state_t dir_state;
-
-	uint32_t last_left_count;
-	uint32_t tx_count;
-} radio_private_state_t;
 
 
 static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_private_state_t *state, int64_t now) {
@@ -234,7 +211,8 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 			state->error_count_tx++;
 			log_error("TX TIMED OUT!");
 		} else {
-			state->tx_count++;
+
+			timing_calc_finish_one_tx(server, &state->timings);
 			state->error_count_tx = 0;
 			log_info("tx done");
 			rbuf_pull(server);
@@ -255,23 +233,7 @@ static void _update_state(radio_private_state_t *state, radio_t *server, int64_t
 		state->dir_state = RS_TX;
 		state->period_start = now;
 
-		uint32_t cur_left_count = ring_buffer_get_avail(&server->radio_ring_buffer);
-		uint32_t last_left_count = state->last_left_count;
-
-		uint32_t tx_count = RADIO_TX_COUNT_LOWER_BOUND;
-		if (tx_count < state->tx_count) {
-			tx_count = state->tx_count;
-		}
-		uint32_t wait_period = 0;
-		int32_t expected_left_count_next = cur_left_count - tx_count;
-		if (expected_left_count_next >= RADIO_BUFFERED_COUNT) {
-			wait_period = 0xFFFFFFFF;
-		} else {
-			uint32_t to_fill = RADIO_BUFFERED_COUNT - expected_left_count_next;
-			wait_period = (RADIO_TX_PERIOD + RADIO_RX_PERIOD) / to_fill;
-		}
-		server->wait_period = wait_period;
-		state->tx_count = 0;
+		timing_calc_finish_all_tx(server, &state->timings);
 
 	}
 	if (state->dir_state == RS_TX && RADIO_TX_PERIOD < now - state->period_start && state->packet_done) {
@@ -292,7 +254,7 @@ static void _update_state(radio_private_state_t *state, radio_t *server, int64_t
 		state->i_really_want_to_start_now = 1;
 		state->last_sent = now;
 		state->error_count_tx += MAX_ERRORS / 2 + 1;
-		rbuf_reset(server);
+		rbuf_reset(server, state);
 	}
 }
 
@@ -359,7 +321,7 @@ static void radio_loop(void *arg) {
 	state.packet_done = 1;
 	int64_t now = esp_timer_get_time();
 
-	server->wait_period = RADIO_WAIT_PERIOD_START;
+	timing_calc_init(server, &state.timings);
 	while (1) {
 		now = esp_timer_get_time();
 		mavlink_message_t incoming_msg = {0};
