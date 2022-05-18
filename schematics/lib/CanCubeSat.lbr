@@ -3561,7 +3561,7 @@
 </package>
 <package name="VIAS">
 <pad name="P$1" x="0" y="0" drill="0.6"/>
-<text x="-3" y="1" size="1.27" layer="21">&gt;NAME</text>
+<text x="-3" y="1" size="1.27" layer="27">&gt;VALUE</text>
 </package>
 <package name="QFN-30">
 <wire x1="-2.55" y1="2.55" x2="2.55" y2="2.55" width="0.127" layer="21"/>
@@ -3602,9 +3602,30 @@
 <circle x="-3.5" y="2.5" radius="0.1" width="0.127" layer="21"/>
 </package>
 <package name="VIAS-CONNECT">
-<text x="-3" y="1" size="1.27" layer="21">&gt;NAME</text>
+<text x="-3" y="1" size="1.27" layer="27">&gt;VALUE</text>
 <smd name="1" x="-0.5" y="0" dx="0.8" dy="0.8" layer="1"/>
 <smd name="2" x="0.5" y="0" dx="0.8" dy="0.8" layer="1"/>
+<wire x1="-1.1" y1="0.6" x2="-0.7" y2="0.6" width="0.127" layer="21"/>
+<wire x1="-0.7" y1="0.6" x2="0.7" y2="0.6" width="0.127" layer="21"/>
+<wire x1="0.7" y1="0.6" x2="1.1" y2="0.6" width="0.127" layer="21"/>
+<wire x1="1.1" y1="0.6" x2="1.1" y2="-0.6" width="0.127" layer="21"/>
+<wire x1="1.1" y1="-0.6" x2="0.7" y2="-0.6" width="0.127" layer="21"/>
+<wire x1="0.7" y1="-0.6" x2="-0.7" y2="-0.6" width="0.127" layer="21"/>
+<wire x1="-0.7" y1="-0.6" x2="-1.1" y2="-0.6" width="0.127" layer="21"/>
+<wire x1="-1.1" y1="-0.6" x2="-1.1" y2="0.6" width="0.127" layer="21"/>
+<wire x1="-0.7" y1="0.6" x2="0.7" y2="0.6" width="0.127" layer="21" curve="-98.797411"/>
+<wire x1="0.7" y1="-0.6" x2="-0.7" y2="-0.6" width="0.127" layer="21" curve="-98.797411"/>
+</package>
+<package name="SOLDERING-PAD-4A">
+<smd name="P$1" x="1.1" y="0" dx="1.4" dy="2" layer="1" rot="R90"/>
+<smd name="P$2" x="-1.1" y="0" dx="1.4" dy="2" layer="1" rot="R270"/>
+<wire x1="-2.3" y1="0.9" x2="2.3" y2="0.9" width="0.1" layer="21"/>
+<wire x1="2.3" y1="0.9" x2="2.3" y2="-0.9" width="0.1" layer="21"/>
+<wire x1="2.3" y1="-0.9" x2="-2.3" y2="-0.9" width="0.1" layer="21"/>
+<wire x1="-2.3" y1="-0.9" x2="-2.3" y2="0.9" width="0.1" layer="21"/>
+<text x="0" y="1.97" size="1" layer="25" align="bottom-center">&gt;VALUE</text>
+<wire x1="-1.27" y1="0.943" x2="1.27" y2="0.943" width="0.127" layer="21" curve="-90"/>
+<wire x1="1.27" y1="-0.943" x2="-1.27" y2="-0.943" width="0.127" layer="21" curve="-90"/>
 </package>
 </packages>
 <packages3d>
@@ -4863,6 +4884,8 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 <symbol name="VIAS">
 <text x="-6.35" y="3.175" size="1.778" layer="95">&gt;NAME</text>
 <pin name="1" x="-2.54" y="0" visible="pad" length="short" direction="pas" function="dot"/>
+<text x="-6.35" y="3.175" size="1.778" layer="95">&gt;NAME</text>
+<text x="-6.35" y="-4.445" size="1.778" layer="95">&gt;VALUE</text>
 </symbol>
 <symbol name="MP5515">
 <pin name="CST" x="-15.24" y="12.7" length="middle"/>
@@ -4903,6 +4926,7 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 <text x="-3.81" y="3.175" size="1.778" layer="95">&gt;NAME</text>
 <pin name="1" x="-2.54" y="0" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="2" x="2.54" y="0" visible="pad" length="short" direction="pas" function="dot" rot="R180"/>
+<text x="-3.81" y="-4.445" size="1.778" layer="96">&gt;VALUE</text>
 </symbol>
 <symbol name="2N-MOSFET">
 <wire x1="-2.54" y1="5.08" x2="-1.2192" y2="5.08" width="0.1524" layer="94"/>
@@ -7565,7 +7589,7 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 </device>
 </devices>
 </deviceset>
-<deviceset name="VIAS">
+<deviceset name="VIAS" uservalue="yes">
 <gates>
 <gate name="G$1" symbol="VIAS" x="0" y="0"/>
 </gates>
@@ -7622,7 +7646,7 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 </device>
 </devices>
 </deviceset>
-<deviceset name="VIAS-CONNECT">
+<deviceset name="VIAS-CONNECT" uservalue="yes">
 <gates>
 <gate name="G$1" symbol="VIAS-CONNECT" x="0" y="0"/>
 </gates>
@@ -7631,6 +7655,15 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 <connects>
 <connect gate="G$1" pin="1" pad="1"/>
 <connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="W1.4MM" package="SOLDERING-PAD-4A">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
+<connect gate="G$1" pin="2" pad="P$2"/>
 </connects>
 <technologies>
 <technology name=""/>
