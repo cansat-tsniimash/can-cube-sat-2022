@@ -1454,6 +1454,11 @@
 <wire x1="-1.27" y1="0.943" x2="1.27" y2="0.943" width="0.127" layer="21" curve="-90"/>
 <wire x1="1.27" y1="-0.943" x2="-1.27" y2="-0.943" width="0.127" layer="21" curve="-90"/>
 </package>
+<package name="GNDS-CONNECTOR">
+<smd name="P$1" x="-0.5" y="0" dx="0.5" dy="2" layer="1"/>
+<smd name="P$2" x="0.5" y="0" dx="0.5" dy="2" layer="1"/>
+<rectangle x1="-0.5" y1="-1" x2="0.5" y2="1" layer="1"/>
+</package>
 </packages>
 <symbols>
 <symbol name="C-US">
@@ -1879,6 +1884,11 @@
 <wire x1="5.08" y1="-2.54" x2="5.08" y2="2.54" width="0.254" layer="94"/>
 <wire x1="5.08" y1="2.54" x2="-5.08" y2="2.54" width="0.254" layer="94"/>
 <text x="-6.604" y="-5.08" size="1.778" layer="95">SI2302CDS</text>
+</symbol>
+<symbol name="GNDS-CONNECTOR">
+<pin name="P$1" x="7.62" y="0" length="middle" rot="R180"/>
+<pin name="P$2" x="7.62" y="-2.54" length="middle" rot="R180"/>
+<rectangle x1="2.286" y1="-3.81" x2="5.08" y2="1.27" layer="94"/>
 </symbol>
 </symbols>
 <devicesets>
@@ -2359,6 +2369,22 @@
 <connect gate="G$1" pin="D" pad="3"/>
 <connect gate="G$1" pin="G" pad="1"/>
 <connect gate="G$1" pin="S" pad="2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="GNDS-CONNECTOR">
+<gates>
+<gate name="G$1" symbol="GNDS-CONNECTOR" x="-5.08" y="0"/>
+</gates>
+<devices>
+<device name="" package="GNDS-CONNECTOR">
+<connects>
+<connect gate="G$1" pin="P$1" pad="P$1"/>
+<connect gate="G$1" pin="P$2" pad="P$2"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -18052,6 +18078,7 @@ Source: www.kingbright.com</description>
 <part name="U$55" library="CanCubeSat" deviceset="VIAS-CONNECT" device="W1.4MM" value="VB-D"/>
 <part name="3362P6" library="CanCubeSat" deviceset="3362P-1-502LF" device="" value="20k"/>
 <part name="3362P7" library="CanCubeSat" deviceset="3362P-1-502LF" device="" value="20k"/>
+<part name="U$7" library="CanCubeSat" deviceset="GNDS-CONNECTOR" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -18903,6 +18930,7 @@ Source: www.kingbright.com</description>
 <attribute name="NAME" x="375.9418" y="48.2535" size="1.78255" layer="95" rot="R180"/>
 <attribute name="VALUE" x="375.9245" y="55.902259375" size="1.7848" layer="96" rot="R180"/>
 </instance>
+<instance part="U$7" gate="G$1" x="-210.82" y="426.72" smashed="yes"/>
 </instances>
 <busses>
 </busses>
@@ -19155,6 +19183,11 @@ Source: www.kingbright.com</description>
 <pinref part="C1.D" gate="G$1" pin="1"/>
 <wire x1="-50.8" y1="73.66" x2="-50.8" y2="55.88" width="0.1524" layer="91"/>
 <label x="-50.8" y="55.88" size="1.778" layer="95" rot="R90"/>
+</segment>
+<segment>
+<pinref part="U$7" gate="G$1" pin="P$1"/>
+<wire x1="-203.2" y1="426.72" x2="-190.5" y2="426.72" width="0.1524" layer="91"/>
+<label x="-198.12" y="426.72" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="INA_BUS+" class="0">
@@ -19964,6 +19997,11 @@ Source: www.kingbright.com</description>
 <pinref part="U$33" gate="G$1" pin="1"/>
 <wire x1="-340.36" y1="-81.28" x2="-340.36" y2="-93.98" width="0.1524" layer="91"/>
 <junction x="-340.36" y="-81.28"/>
+</segment>
+<segment>
+<pinref part="U$7" gate="G$1" pin="P$2"/>
+<wire x1="-203.2" y1="424.18" x2="-190.5" y2="424.18" width="0.1524" layer="91"/>
+<label x="-198.12" y="424.18" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="N$7" class="0">
