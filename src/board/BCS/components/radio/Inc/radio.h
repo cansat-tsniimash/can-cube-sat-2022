@@ -8,29 +8,27 @@
 #ifndef COMPONENTS_RADIO_INC_RADIO_H_
 #define COMPONENTS_RADIO_INC_RADIO_H_
 
-
+#include "ring_buffer.h"
 #include "sx126x_drv.h"
 #include "mavlink_help2.h"
 
 // Периоды отправки сообщений. Больше - реже
 #define RADIO_SEND_ID_ARRAY(F) \
-	F(0, MAVLINK_MSG_ID_ELECTRICAL_STATE, 15) \
+	F(0, MAVLINK_MSG_ID_ELECTRICAL_STATE, 40) \
 	F(1, MAVLINK_MSG_ID_OWN_TEMP, 20) \
-	F(2, MAVLINK_MSG_ID_THERMAL_STATE, 15) \
-	F(3, MAVLINK_MSG_ID_PLD_BME280_DATA, 15) \
-	F(4, MAVLINK_MSG_ID_PLD_MS5611_DATA, 15) \
+	F(2, MAVLINK_MSG_ID_THERMAL_STATE, 40) \
+	F(3, MAVLINK_MSG_ID_PLD_BME280_DATA, 20) \
+	F(4, MAVLINK_MSG_ID_PLD_MS5611_DATA, 20) \
 	F(5, MAVLINK_MSG_ID_PLD_ME2O2_DATA, 20) \
-	F(6, MAVLINK_MSG_ID_PLD_MICS_6814_DATA, 15) \
-	F(7, MAVLINK_MSG_ID_SINS_isc, 200) \
-	F(8, MAVLINK_MSG_ID_GPS_UBX_NAV_SOL, 10) \
+	F(6, MAVLINK_MSG_ID_PLD_MICS_6814_DATA, 20) \
+	F(7, MAVLINK_MSG_ID_SINS_isc, 10) \
+	F(8, MAVLINK_MSG_ID_GPS_UBX_NAV_SOL, 20) \
 
 #define RADIO_SEND_BAN(F) \
 	F(MAVLINK_MSG_ID_TIMESTAMP)
 
 #define RADIO_DEFAULT_PERIOD 30
 #define RADIO_SLEEP_DEFAULT 2000
-
-
 
 #define RADIO_PACKET_SIZE ITS_RADIO_PACKET_SIZE
 #define RADIO_RX_TIMEDOUT_LIMIT 5
@@ -42,13 +40,15 @@
 #define _DIV_TRUNC(a, b) (((a) + (b) - 1) / (b))
 
 #define RADIO_TX_PERIOD (4000 * 1000)
-#define RADIO_RX_PERIOD (2000 * 1000)
+//#define RADIO_RX_PERIOD (2000 * 1000)
+#define RADIO_RX_PERIOD (100 * 1000)
 #define RADIO_START_ANYWAY (10000 * 1000)
 /*
  * Это поле не меняется автоматически!!! См. _radio_init
  */
 #warning "Это поле меняется вручную в зависисимости от периода отправки сообщений"
-#define RADIO_TX_COUNT 7
+//#define RADIO_TX_COUNT 7
+#define RADIO_TX_COUNT 400
 
 typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
@@ -79,9 +79,9 @@ typedef struct radio_t {
 	mav_buf_t mav_buf;
 
 	radio_buf_t radio_buf[RADIO_TX_COUNT];
-	int radio_buf_to_write;
-	int radio_buf_to_read;
+	ring_buffer_t radio_ring_buffer;
 
+	uint32_t wait_period;
 
 	uint8_t mavlink_chan;
 	uint32_t msg_count;
