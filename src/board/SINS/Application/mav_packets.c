@@ -281,7 +281,7 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 			msg_sins_rxmsvsi.age_3    = ubx_rxmsvsi_SV_packet_top[3].age;
 
 			mavlink_message_t msg;
-			mavlink_msg_sins_navsvinfo_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_navsvinfo);
+			mavlink_msg_sins_rxmsvsi_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_rxmsvsi);
 			uplink_write_mav(&msg);
 			break;
 		}
