@@ -8,6 +8,7 @@
 
 #include "radio.h"
 #include "../Inc_private/radio_help.h"
+#include "../Inc_private/timing_calc.h"
 #include "init_helper.h"
 #include "router.h"
 #include "assert.h"
@@ -19,7 +20,6 @@
 #define RADIO_SLEEP_AWAKE_LEGNTH 300 //ms
 #define RADIO_SLEEP_SLEEP_LENGTH 4000 //ms
 #define MAX_ERRORS 5
-#define RADIO_PACKET_PERIOD ((RADIO_TX_PERIOD + RADIO_RX_PERIOD) / RADIO_TX_COUNT)
 
 static radio_t radio_server;
 
@@ -57,16 +57,20 @@ static int _radio_init(radio_t * server)
 			.lna_boost = true,
 
 			// Параметры пакетирования
-			.spreading_factor = SX126X_LORA_SF_8,
-			.bandwidth = SX126X_LORA_BW_250,
-			.coding_rate = SX126X_LORA_CR_4_8,
+			//.spreading_factor = SX126X_LORA_SF_8,
+			.spreading_factor = SX126X_LORA_SF_6,
+			//.bandwidth = SX126X_LORA_BW_250,
+			.bandwidth = SX126X_LORA_BW_500,
+			//.coding_rate = SX126X_LORA_CR_4_8,
+			.coding_rate = SX126X_LORA_CR_4_5,
 			.ldr_optimizations = false,
 	};
 
 	const sx126x_drv_lora_packet_cfg_t packet_cfg = {
 			.invert_iq = false,
 			.syncword = SX126X_LORASYNCWORD_PRIVATE,
-			.preamble_length = 8,
+			//.preamble_length = 8,
+			.preamble_length = 50,
 			.explicit_header = true,
 			.payload_length = RADIO_PACKET_SIZE,
 			.use_crc = true,
@@ -160,27 +164,6 @@ static void _save_logs(radio_t *server) {
 	}
 }
 
-typedef enum {
-	RS_NONE,
-	RS_TX,
-	RS_RX,
-} radio_trans_dir_state_t;
-
-
-
-
-
-
-typedef struct {
-	int packet_done;
-	int i_really_want_to_start_now;
-	int64_t last_sent;
-	int64_t last_added;
-	int64_t period_start;
-	uint32_t error_count_tx;
-	uint32_t error_count_rx;
-	radio_trans_dir_state_t dir_state;
-} radio_private_state_t;
 
 
 static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_private_state_t *state, int64_t now) {
@@ -228,6 +211,8 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 			state->error_count_tx++;
 			log_error("TX TIMED OUT!");
 		} else {
+
+			timing_calc_finish_one_tx(server, &state->timings);
 			state->error_count_tx = 0;
 			log_info("tx done");
 			rbuf_pull(server);
@@ -247,7 +232,9 @@ static void _update_state(radio_private_state_t *state, radio_t *server, int64_t
 		log_info("START TX0");
 		state->dir_state = RS_TX;
 		state->period_start = now;
-		rbuf_reset(server);
+
+		timing_calc_finish_all_tx(server, &state->timings);
+
 	}
 	if (state->dir_state == RS_TX && RADIO_TX_PERIOD < now - state->period_start && state->packet_done) {
 		log_info("START RX");
@@ -267,7 +254,7 @@ static void _update_state(radio_private_state_t *state, radio_t *server, int64_t
 		state->i_really_want_to_start_now = 1;
 		state->last_sent = now;
 		state->error_count_tx += MAX_ERRORS / 2 + 1;
-		rbuf_reset(server);
+		rbuf_reset(server, state);
 	}
 }
 
@@ -334,6 +321,7 @@ static void radio_loop(void *arg) {
 	state.packet_done = 1;
 	int64_t now = esp_timer_get_time();
 
+	timing_calc_init(server, &state.timings);
 	while (1) {
 		now = esp_timer_get_time();
 		mavlink_message_t incoming_msg = {0};
@@ -342,7 +330,7 @@ static void radio_loop(void *arg) {
 			// Если мы получили сообщение - складываем в его хранилище
 			update_msg(&incoming_msg);
 		}
-		if (RADIO_PACKET_PERIOD < now - state.last_added) {
+		if (server->wait_period < now - state.last_added) {
 			if (rbuf_fill(server)) {
 				state.last_added = now;
 			}
@@ -414,6 +402,7 @@ void radio_send_init(void) {
 		radio_server.radio_buf[i].capacity = ITS_RADIO_PACKET_SIZE;
 		radio_server.radio_buf[i].size = ITS_RADIO_PACKET_SIZE;
 	}
+	ring_buffer_init(&radio_server.radio_ring_buffer, radio_server.radio_buf, RADIO_TX_COUNT, sizeof(radio_buf_t));
 
 	xTaskCreatePinnedToCore(radio_task, "Radio send", configMINIMAL_STACK_SIZE + 4000, &radio_server, 4, &task_s, tskNO_AFFINITY);
 
