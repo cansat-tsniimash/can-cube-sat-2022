@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="yes" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="16" fill="1" visible="no" active="yes"/>
@@ -3606,6 +3606,34 @@
 <smd name="1" x="-0.5" y="0" dx="0.8" dy="0.8" layer="1"/>
 <smd name="2" x="0.5" y="0" dx="0.8" dy="0.8" layer="1"/>
 </package>
+<package name="DOSIM_SBM20-1">
+<pad name="P$1" x="-0.05" y="1.73" drill="1.016" shape="octagon"/>
+<pad name="P$2" x="0.05" y="-78.3" drill="1.016" shape="octagon"/>
+<wire x1="-0.75" y1="3.5" x2="0.75" y2="3.5" width="0.127" layer="21"/>
+<wire x1="0.75" y1="3.5" x2="0.75" y2="-5" width="0.127" layer="21"/>
+<wire x1="-0.75" y1="3.5" x2="-0.75" y2="-5" width="0.127" layer="21"/>
+<wire x1="5.5" y1="-5" x2="5.5" y2="-83" width="0.127" layer="21"/>
+<wire x1="5.5" y1="-83" x2="-5.5" y2="-83" width="0.127" layer="21"/>
+<wire x1="-5.5" y1="-83" x2="-5.5" y2="-5" width="0.127" layer="21"/>
+<wire x1="-5.5" y1="-5" x2="-0.75" y2="-5" width="0.127" layer="21"/>
+<text x="2.75" y="2" size="2.54" layer="21" align="center">+</text>
+<text x="4.25" y="-78" size="2.54" layer="21" align="center">-</text>
+<wire x1="0.75" y1="-5" x2="5.5" y2="-5" width="0.127" layer="21"/>
+<text x="10" y="-7" size="1" layer="21" rot="R90">&gt;NAME</text>
+</package>
+<package name="33MH">
+<pad name="P$1" x="-1.27" y="0" drill="1"/>
+<pad name="P$2" x="1.27" y="0" drill="1"/>
+<circle x="0" y="0" radius="3.1" width="0.127" layer="21"/>
+<text x="0" y="3.7" size="0.8" layer="21" ratio="15" align="bottom-center">&gt;NAME</text>
+<text x="-0.3" y="-4.4" size="0.8" layer="21" ratio="15" align="bottom-center">&gt;VALUE</text>
+</package>
+<package name="BUZZER">
+<circle x="0" y="0" radius="6" width="0.127" layer="21"/>
+<pad name="P$1" x="-3.8" y="0" drill="1"/>
+<pad name="P$2" x="3.8" y="0" drill="1"/>
+<text x="-3" y="7" size="1.27" layer="21">&gt;NAME</text>
+</package>
 </packages>
 <packages3d>
 <package3d name="SOIC8" urn="urn:adsk.eagle:package:8087957/1" type="box">
@@ -5105,6 +5133,15 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 <wire x1="5.08" y1="12.7" x2="5.08" y2="-12.7" width="0.254" layer="94"/>
 <wire x1="5.08" y1="-12.7" x2="-2.54" y2="-12.7" width="0.254" layer="94"/>
 <wire x1="-2.54" y1="-12.7" x2="-2.54" y2="12.7" width="0.254" layer="94"/>
+</symbol>
+<symbol name="BUZZER">
+<wire x1="-7.62" y1="2.54" x2="7.62" y2="2.54" width="0.254" layer="94"/>
+<wire x1="7.62" y1="2.54" x2="7.62" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="7.62" y1="-2.54" x2="-7.62" y2="-2.54" width="0.254" layer="94"/>
+<wire x1="-7.62" y1="-2.54" x2="-7.62" y2="2.54" width="0.254" layer="94"/>
+<pin name="VIN" x="-12.7" y="0" length="middle"/>
+<pin name="GND" x="12.7" y="0" length="middle" rot="R180"/>
+<text x="-7.62" y="5.08" size="2.54" layer="95">&gt;NAME</text>
 </symbol>
 </symbols>
 <devicesets>
@@ -7671,6 +7708,54 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 <connect gate="G$1" pin="G1" pad="4"/>
 <connect gate="G$1" pin="S" pad="1"/>
 <connect gate="G$1" pin="S1" pad="3"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="DOSIM_SBM20-1">
+<gates>
+<gate name="G$1" symbol="DOSIM" x="0" y="2.54"/>
+</gates>
+<devices>
+<device name="" package="DOSIM_SBM20-1">
+<connects>
+<connect gate="G$1" pin="+" pad="P$1"/>
+<connect gate="G$1" pin="-" pad="P$2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="33MH">
+<gates>
+<gate name="G$1" symbol="L-US" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="33MH">
+<connects>
+<connect gate="G$1" pin="1" pad="P$1"/>
+<connect gate="G$1" pin="2" pad="P$2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="BUZZER">
+<gates>
+<gate name="G$1" symbol="BUZZER" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="BUZZER">
+<connects>
+<connect gate="G$1" pin="GND" pad="P$1"/>
+<connect gate="G$1" pin="VIN" pad="P$2"/>
 </connects>
 <technologies>
 <technology name=""/>
