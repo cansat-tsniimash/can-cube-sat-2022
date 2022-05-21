@@ -71,7 +71,7 @@ void packet_callback(void* arg, const ubx_any_packet_t* packet)
         printf("numVis = %d\n", packet_rxmsvsi->numVis);
         printf("numSV = %d\n", packet_rxmsvsi->numSV);
         ubx_rxmsvsi_SV_packet_t SV_packet;
-        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_mun(*packet_rxmsvsi); i++)
+        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_num(*packet_rxmsvsi); i++)
         {
             ubx_parse_rxm_svsi_SV(*packet_rxmsvsi, i, &SV_packet);
             if (ubx_parse_rxm_svsi_SV_ura(SV_packet) < 15)
