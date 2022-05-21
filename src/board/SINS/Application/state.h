@@ -83,6 +83,8 @@ typedef struct {
     struct timeval tv;
     float accel[3];
     float magn[3];
+    float magn_raw[3];
+    float gyro[3];
     float quaternion[4];
 
     float sensor[ITS_SINS_LDS_COUNT];
@@ -129,7 +131,6 @@ typedef struct {
 
 
 extern error_system_t error_system;
-extern stateSINS_rsc_t stateSINS_rsc;
 extern state_system_t state_system;
 extern state_zero_t state_zero;
 extern state_system_t state_system_prev;

@@ -24,25 +24,6 @@
 #define LSM_TIMEOUT	3
 #define MDPS_TO_RAD	M_PI / 180 / 1000
 
-//	Magnetometer bias & transform matrix
-#define X_MAGN_OFFSET		 -284.715327
-#define Y_MAGN_OFFSET		 720.339239
-#define Z_MAGN_OFFSET		 197.207221
-#define XX_MAGN_TRANSFORM_MATIX	 0.004001
-#define YY_MAGN_TRANSFORM_MATIX	 0.003255
-#define ZZ_MAGN_TRANSFORM_MATIX	 0.001389
-#define XY_MAGN_TRANSFORM_MATIX	 0.000063
-#define XZ_MAGN_TRANSFORM_MATIX	 0.000026
-#define YZ_MAGN_TRANSFORM_MATIX	 0.000504
-
-
-//	Magnetometer bias and transform matrix (to provide real values)
-static const float offset_vector[3] = {X_MAGN_OFFSET, Y_MAGN_OFFSET, Z_MAGN_OFFSET};
-static const float transform_matrix[3][3] = {
-		{ XX_MAGN_TRANSFORM_MATIX, XY_MAGN_TRANSFORM_MATIX, XZ_MAGN_TRANSFORM_MATIX },
-		{ XY_MAGN_TRANSFORM_MATIX, YY_MAGN_TRANSFORM_MATIX, YZ_MAGN_TRANSFORM_MATIX },
-		{ XZ_MAGN_TRANSFORM_MATIX, YZ_MAGN_TRANSFORM_MATIX, ZZ_MAGN_TRANSFORM_MATIX }
-};
 
 
 
@@ -114,17 +95,6 @@ int mems_lis3mdl_get_m_data_mG(int16_t * data, float * magn)
 	magn[1] = 1000 * LIS3MDL_FROM_FS_16G_TO_G(data[1]);
 	magn[2] = 1000 * LIS3MDL_FROM_FS_16G_TO_G(data[2]);
 
-
-#if !CALIBRATION
-
-	vmv(magn, (float*)offset_vector, magn);
-	mxv((float(*)[3])transform_matrix, magn, magn);
-	//	Change axes to be like in accelerometer FIXME: посмотреть в datasheet направление осей
-//	float tmp = magn[0];
-//	magn[0] = magn[1];
-//	magn[1] = tmp;
-//	magn[2] = -magn[2];
-#endif
 
 	return 0;
 }

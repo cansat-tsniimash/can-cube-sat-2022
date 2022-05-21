@@ -49,6 +49,8 @@ int mavlink_sins_isc(stateSINS_isc_t * state_isc)
 		msg_sins_isc.compass[i] = state_isc->magn[i];
         msg_sins_isc.light_dir_measured[i] = state_isc->dir_sph[i];
         msg_sins_isc.light_dir_real[i] = state_isc->dir_real_sph[i];
+        msg_sins_isc.magn_raw[i] = state_isc->magn_raw[i];
+        msg_sins_isc.gyro[i] = state_isc->gyro[i];
 
 
         msg_sins_isc.quaternion[i] = state_isc->quaternion[i];

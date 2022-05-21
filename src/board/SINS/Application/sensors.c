@@ -10,7 +10,27 @@
 #include "sensors.h"
 #include "drivers/mems/mems.h"
 #include "errors.h"
+#include "vector.h"
 
+//	Magnetometer bias & transform matrix
+#define X_MAGN_OFFSET		 -726.977486
+#define Y_MAGN_OFFSET		 159.732996
+#define Z_MAGN_OFFSET		 193.624403
+#define XX_MAGN_TRANSFORM_MATIX	 0.00317875
+#define YY_MAGN_TRANSFORM_MATIX	 0.00409985
+#define ZZ_MAGN_TRANSFORM_MATIX	 0.00136249
+#define XY_MAGN_TRANSFORM_MATIX	 0.00011033
+#define XZ_MAGN_TRANSFORM_MATIX	 -0.00046611
+#define YZ_MAGN_TRANSFORM_MATIX	 0.00000621
+
+
+//	Magnetometer bias and transform matrix (to provide real values)
+static const float offset_vector[3] = {X_MAGN_OFFSET, Y_MAGN_OFFSET, Z_MAGN_OFFSET};
+static const float transform_matrix[3][3] = {
+		{ XX_MAGN_TRANSFORM_MATIX, XY_MAGN_TRANSFORM_MATIX, XZ_MAGN_TRANSFORM_MATIX },
+		{ XY_MAGN_TRANSFORM_MATIX, YY_MAGN_TRANSFORM_MATIX, YZ_MAGN_TRANSFORM_MATIX },
+		{ XZ_MAGN_TRANSFORM_MATIX, YZ_MAGN_TRANSFORM_MATIX, ZZ_MAGN_TRANSFORM_MATIX }
+};
 
 i2c_error_codes i2c_errors;
 
@@ -247,6 +267,11 @@ int sensors_lsm6ds3_read(float * accel, float * gyro)
 	return 0;
 }
 
+void sensors_magn_callibrate(const float* in, float* out) {
+
+	vmv(in, (const float*)offset_vector, out);
+	mxv((float(*)[3])transform_matrix, out, out);
+}
 
 int sensors_lis3mdl_read(float * magn)
 {

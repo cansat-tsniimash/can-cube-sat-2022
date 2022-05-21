@@ -96,7 +96,6 @@ UART_HandleTypeDef huart3;
 
 error_system_t error_system;
 state_system_t state_system;
-stateSINS_rsc_t stateSINS_rsc;
 state_zero_t state_zero;
 stateSINS_isc_t stateSINS_isc;
 stateSINS_isc_t stateSINS_isc_prev;
@@ -327,8 +326,15 @@ int UpdateDataAll(void)
 	float accel[3] = {0, 0, 0};
 	float gyro[3] = {0, 0, 0};
 	float magn[3] = {0, 0, 0};
+	float magn_raw[3] ={0, 0, 0};
 
-	error_system.lis3mdl_error = sensors_lis3mdl_read(magn);
+	error_system.lis3mdl_error = sensors_lis3mdl_read(magn_raw);
+	float magn_callibrated[3] = {0};
+	sensors_magn_callibrate(magn_raw, magn_callibrated);
+	magn[0] = -magn_callibrated[1];
+	magn[1] = -magn_callibrated[0];
+	magn[2] = magn_callibrated[2];
+
 //	trace_printf("lis error %d\n", error_system.lis3mdl_init_error);
 
 	error_system.lsm6ds3_error = sensors_lsm6ds3_read(accel, gyro);
@@ -344,7 +350,7 @@ int UpdateDataAll(void)
 
         float lds_ginv_buf[LDS_DIM * LDS_COUNT];
         Matrixf lds_ginv = matrix_create_static(LDS_DIM, LDS_COUNT, lds_ginv_buf, LDS_DIM * LDS_COUNT);
-        int res = lds_get_ginversed(arr, 0.1, &lds_ginv);
+        int res = lds_get_ginversed(arr, 0.01, &lds_ginv);
         lds_solution(arr, &lds_ginv, light);
         stateSINS_isc.dir_error = lds_calc_error(arr, 0.1, &lds_ginv, light);
         if (isnan(light[0]) || isnan(light[1]) || isnan(light[2]) || res) {
@@ -380,13 +386,6 @@ int UpdateDataAll(void)
 
 	time_svc_world_get_time(&stateSINS_isc.tv);
 
-	//	пересчитываем их и записываем в структуры
-	for (int k = 0; k < 3; k++) {
-		stateSINS_rsc.accel[k] = accel[k];
-		gyro[k] -= state_zero.gyro_staticShift[k];
-		stateSINS_rsc.gyro[k] = gyro[k];
-		stateSINS_rsc.magn[k] = magn[k];
-	}
 
 
 
@@ -397,9 +396,6 @@ int UpdateDataAll(void)
 	/////////////	UPDATE QUATERNION  //////////////////
 	/////////////////////////////////////////////////////
 
-	float t = magn[0];
-	magn[0] = -magn[1];
-	magn[1] = -t;
 	float dt = ((float)((stateSINS_isc.tv.tv_sec * 1000 + stateSINS_isc.tv.tv_usec / 1000)  - (stateSINS_isc_prev.tv.tv_sec * 1000 + stateSINS_isc_prev.tv.tv_usec / 1000))) / 1000;
 //	trace_printf("dt = %f", dt);
 	stateSINS_isc_prev.tv.tv_sec = stateSINS_isc.tv.tv_sec;
@@ -411,6 +407,8 @@ int UpdateDataAll(void)
     if (error_system.lsm6ds3_error == 0) {
         stateSINS_isc.do_we_use_lds = ITS_SINS_AHRS_USE_LDS && stateSINS_isc.should_we_use_lds;
         stateSINS_isc.do_we_use_mag = (error_system.lis3mdl_error == 0) && ITS_SINS_AHRS_USE_MAG && !(stateSINS_isc.do_we_use_lds && ITS_SINS_AHRS_LDS_MAG_EXCLUSIVE);
+        stateSINS_isc.do_we_use_mag = 0;
+        stateSINS_isc.do_we_use_lds = 1;
 
 
         ahrs_vectorActivate(AHRS_MAG, stateSINS_isc.do_we_use_mag);
@@ -442,37 +440,28 @@ int UpdateDataAll(void)
 	///////////  ROTATE VECTORS TO ISC  /////////////////
 	/////////////////////////////////////////////////////
 
-	vector_t accel_ISC = vec_arrToVec(accel);
+    //vector_t accel_ISC = vec_arrToVec(accel);
 	//accel_ISC = vec_rotate(&t, &ori);
-	vector_t mag_ISC = vec_arrToVec(magn);
+    //vector_t mag_ISC = vec_arrToVec(magn);
 	//mag_ISC = vec_rotate(&t, &ori);
 
-//	printf("hello?\n");
-	if (0 == error_system.lsm6ds3_error)
-	{
-        //TODO: разобраться со сдвигами
-	    stateSINS_isc.accel[0] = accel_ISC.x - state_zero.accel_staticShift[0];
-	    stateSINS_isc.accel[1] = accel_ISC.y - state_zero.accel_staticShift[1];
-	    stateSINS_isc.accel[2] = accel_ISC.z - state_zero.accel_staticShift[2];
-
+	for (int i = 0; i < 3; i++) {
+		if (0 == error_system.lsm6ds3_error) {
+			stateSINS_isc.accel[i] = accel[i];
+			stateSINS_isc.gyro[i] = gyro[i];
+		} else {
+			stateSINS_isc.accel[i] = NAN;
+			stateSINS_isc.gyro[i] = NAN;
+		}
 	}
-	else
-	{
-		for (int i = 0; i < 3; i++)
-			stateSINS_isc.accel[i] = 0;
-	}
-
-	//	Copy vectors to global structure
-	if (0 == error_system.lis3mdl_error)
-	{
-        stateSINS_isc.magn[0] = mag_ISC.x;
-        stateSINS_isc.magn[1] = mag_ISC.y;
-        stateSINS_isc.magn[2] = mag_ISC.z;
-	}
-	else
-	{
-		for(int i = 0; i < 3; i++)
-			stateSINS_isc.magn[i] = 0;
+	for (int i = 0; i < 3; i++) {
+		if (0 == error_system.lis3mdl_error) {
+			stateSINS_isc.magn[i] = magn[i];
+			stateSINS_isc.magn_raw[i] = magn_raw[i];
+		} else {
+			stateSINS_isc.magn[i] = NAN;
+			stateSINS_isc.magn_raw[i] = NAN;
+		}
 	}
 
 	float ang[3];
@@ -732,7 +721,6 @@ int main(void)
   //	Global structures init
 	memset(&stateSINS_isc, 			0x00, sizeof(stateSINS_isc));
 	memset(&stateSINS_isc_prev, 	0x00, sizeof(stateSINS_isc_prev));
-  	memset(&stateSINS_rsc, 			0x00, sizeof(stateSINS_rsc));
   	memset(&state_system,			0x00, sizeof(state_system));
   	memset(&state_zero,				0x00, sizeof(state_zero));
   	memset(&error_system, 			0x00, sizeof(error_system));

@@ -41,6 +41,7 @@ int sensors_init(void);
 // чтение  даннных сгироскопа и акселерометра и гироскопа
 int sensors_lsm6ds3_read(float * accel, float * gyro);
 
+void sensors_magn_callibrate(const float* in, float* out);
 
 // чтение данных с магнитометра
 int sensors_lis3mdl_read(float * magn);
