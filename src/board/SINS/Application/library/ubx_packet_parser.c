@@ -199,11 +199,11 @@ static void _ubx_parse_rxm_svsi(const uint8_t* payload, ubx_any_packet_t* packet
 {
 	ubx_rxmsvsi_packet_t* packet = &packet_->packet.rxmsvsi;
 
-	packet->iTOW      = _read_u32(payload + 0);
-	packet->week      = _read_i16(payload + 4);
-	packet->numVis    =         *(payload + 6);
-	packet->numSV     =         *(payload + 7);
-	packet->SVbuf_ptr =          (payload + 8);
+	packet->iTOW      =  _read_u32(payload + 0);
+	packet->week      =  _read_i16(payload + 4);
+	packet->numVis    =          *(payload + 6);
+	packet->numSV     =          *(payload + 7);
+	packet->SVbuf_ptr = (uint8_t*)(payload + 8);
 }
 
 
@@ -274,10 +274,10 @@ static void _ubx_parse_nav_svinfo(const uint8_t* payload, ubx_any_packet_t* pack
 {
 	ubx_navsvinfo_packet_t* packet = &packet_->packet.navsvinfo;
 
-	packet->iTOW        = _read_u32(payload + 0);
-	packet->numCh       =         *(payload + 4);
-	packet->globalFlags =         *(payload + 5);
-	packet->CHbuf_ptr   =          (payload + 8);
+	packet->iTOW        =  _read_u32(payload + 0);
+	packet->numCh       =          *(payload + 4);
+	packet->globalFlags =          *(payload + 5);
+	packet->CHbuf_ptr   = (uint8_t*)(payload + 8);
 }
 
 
@@ -402,6 +402,10 @@ int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet
 
 	case UBX_PID_RXM_SVSI:
 		_ubx_parse_rxm_svsi(payload_start, packet);
+		break;
+
+	case UBX_PID_NAV_SVINFO:
+		_ubx_parse_nav_svinfo(payload_start, packet);
 		break;
 
 	default:
