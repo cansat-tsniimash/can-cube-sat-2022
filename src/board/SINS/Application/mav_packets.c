@@ -257,7 +257,7 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 	        	}
 	        	else
 	        	{
-	        		for (uint8_t j = 0; j < 4, j++)
+	        		for (uint8_t j = 0; j < 4; j++)
 	        		{
 	        			if (ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_top[j]) < ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet))
 	        			{
@@ -297,16 +297,16 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 			msg_sins_navsvinfo.num_ch      = packet->packet.navsvinfo.numCh;
 			ubx_navsvinfo_CH_packet_t ubx_navsvinfo_CH_packet_top[4];
 			ubx_navsvinfo_CH_packet_t ubx_navsvinfo_CH_packet;
-	        for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_num((ubx_navsvinfo_packet_t)packet->packet.navsvinfo); i++)
+	        for (uint8_t i = 0; i < ubx_parse_nav_svinfo_CH_num((ubx_navsvinfo_packet_t)packet->packet.navsvinfo); i++)
 	        {
-	        	ubx_parse_rxm_svsi_SV((ubx_navsvinfo_packet_t)packet->packet.navsvinfo, i, &ubx_navsvinfo_CH_packet);
+	        	ubx_parse_nav_svinfo_CH((ubx_navsvinfo_packet_t)packet->packet.navsvinfo, i, &ubx_navsvinfo_CH_packet);
 	        	if (i < 4)
 	        	{
 	        		ubx_navsvinfo_CH_packet_top[i] = ubx_navsvinfo_CH_packet;
 	        	}
 	        	else
 	        	{
-	        		for (uint8_t j = 0; j < 4, j++)
+	        		for (uint8_t j = 0; j < 4; j++)
 	        		{
 	        			if (ubx_navsvinfo_CH_packet_top[j].cno < ubx_navsvinfo_CH_packet.cno)
 	        			{
@@ -316,22 +316,22 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 	        		}
 	        	}
 	        }
-			msg_sins_navsvinfo.svid_0    = ubx_rxmsvsi_SV_packet_top[0].svid;
-			msg_sins_navsvinfo.flags_0   = ubx_rxmsvsi_SV_packet_top[0].flags;
-			msg_sins_navsvinfo.quality_0 = ubx_rxmsvsi_SV_packet_top[0].quality;
-			msg_sins_navsvinfo.cno_0     = ubx_rxmsvsi_SV_packet_top[0].cno;
-			msg_sins_navsvinfo.svid_1    = ubx_rxmsvsi_SV_packet_top[1].svid;
-			msg_sins_navsvinfo.flags_1   = ubx_rxmsvsi_SV_packet_top[1].flags;
-			msg_sins_navsvinfo.quality_1 = ubx_rxmsvsi_SV_packet_top[1].quality;
-			msg_sins_navsvinfo.cno_1     = ubx_rxmsvsi_SV_packet_top[1].cno;
-			msg_sins_navsvinfo.svid_2    = ubx_rxmsvsi_SV_packet_top[2].svid;
-			msg_sins_navsvinfo.flags_2   = ubx_rxmsvsi_SV_packet_top[2].flags;
-			msg_sins_navsvinfo.quality_2 = ubx_rxmsvsi_SV_packet_top[2].quality;
-			msg_sins_navsvinfo.cno_2     = ubx_rxmsvsi_SV_packet_top[2].cno;
-			msg_sins_navsvinfo.svid_3    = ubx_rxmsvsi_SV_packet_top[3].svid;
-			msg_sins_navsvinfo.flags_3   = ubx_rxmsvsi_SV_packet_top[3].flags;
-			msg_sins_navsvinfo.quality_3 = ubx_rxmsvsi_SV_packet_top[3].quality;
-			msg_sins_navsvinfo.cno_3     = ubx_rxmsvsi_SV_packet_top[3].cno;
+			msg_sins_navsvinfo.svid_0    = ubx_navsvinfo_CH_packet_top[0].svid;
+			msg_sins_navsvinfo.flags_0   = ubx_navsvinfo_CH_packet_top[0].flags;
+			msg_sins_navsvinfo.quality_0 = ubx_navsvinfo_CH_packet_top[0].quality;
+			msg_sins_navsvinfo.cno_0     = ubx_navsvinfo_CH_packet_top[0].cno;
+			msg_sins_navsvinfo.svid_1    = ubx_navsvinfo_CH_packet_top[1].svid;
+			msg_sins_navsvinfo.flags_1   = ubx_navsvinfo_CH_packet_top[1].flags;
+			msg_sins_navsvinfo.quality_1 = ubx_navsvinfo_CH_packet_top[1].quality;
+			msg_sins_navsvinfo.cno_1     = ubx_navsvinfo_CH_packet_top[1].cno;
+			msg_sins_navsvinfo.svid_2    = ubx_navsvinfo_CH_packet_top[2].svid;
+			msg_sins_navsvinfo.flags_2   = ubx_navsvinfo_CH_packet_top[2].flags;
+			msg_sins_navsvinfo.quality_2 = ubx_navsvinfo_CH_packet_top[2].quality;
+			msg_sins_navsvinfo.cno_2     = ubx_navsvinfo_CH_packet_top[2].cno;
+			msg_sins_navsvinfo.svid_3    = ubx_navsvinfo_CH_packet_top[3].svid;
+			msg_sins_navsvinfo.flags_3   = ubx_navsvinfo_CH_packet_top[3].flags;
+			msg_sins_navsvinfo.quality_3 = ubx_navsvinfo_CH_packet_top[3].quality;
+			msg_sins_navsvinfo.cno_3     = ubx_navsvinfo_CH_packet_top[3].cno;
 
 			mavlink_message_t msg;
 			mavlink_msg_sins_navsvinfo_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_navsvinfo);
