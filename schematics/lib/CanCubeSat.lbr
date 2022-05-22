@@ -3660,6 +3660,14 @@
 <pad name="P$2" x="3.8" y="0" drill="1"/>
 <text x="-3" y="7" size="1.27" layer="21">&gt;NAME</text>
 </package>
+<package name="BUZZER-S8R12">
+<circle x="0" y="0" radius="6" width="0.127" layer="21"/>
+<pad name="P$1" x="-4" y="0" drill="1" shape="octagon"/>
+<pad name="P$2" x="4" y="0" drill="1" shape="octagon"/>
+<text x="-3" y="7" size="1.27" layer="21">&gt;NAME</text>
+<text x="-4" y="2" size="2" layer="21" ratio="10" align="center">+</text>
+<text x="4" y="2" size="2" layer="21" ratio="10" align="center">-</text>
+</package>
 </packages>
 <packages3d>
 <package3d name="SOIC8" urn="urn:adsk.eagle:package:8087957/1" type="box">
@@ -5144,9 +5152,9 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 <wire x1="3.302" y1="-8.128" x2="3.048" y2="-8.382" width="0.1524" layer="94"/>
 <circle x="2.54" y="-10.16" radius="0.3592" width="0" layer="94"/>
 <circle x="2.54" y="-5.08" radius="0.3592" width="0" layer="94"/>
-<pin name="D1" x="2.54" y="-2.54" visible="off" length="point" direction="pas" rot="R180"/>
-<pin name="S1" x="2.54" y="-15.24" visible="off" length="short" direction="pas" rot="R90"/>
-<pin name="G1" x="-5.08" y="-10.16" visible="off" length="short" direction="pas"/>
+<pin name="D2" x="2.54" y="-2.54" visible="off" length="point" direction="pas" rot="R180"/>
+<pin name="S2" x="2.54" y="-15.24" visible="off" length="short" direction="pas" rot="R90"/>
+<pin name="G2" x="-5.08" y="-10.16" visible="off" length="short" direction="pas"/>
 <polygon width="0.1524" layer="94">
 <vertex x="3.302" y="-7.112"/>
 <vertex x="3.81" y="-8.128"/>
@@ -7812,6 +7820,15 @@ Datasheet and info: http://www.ebyte.com/en/product-view-news.aspx?id=436</descr
 </gates>
 <devices>
 <device name="" package="BUZZER">
+<connects>
+<connect gate="G$1" pin="GND" pad="P$1"/>
+<connect gate="G$1" pin="VIN" pad="P$2"/>
+</connects>
+<technologies>
+<technology name=""/>
+</technologies>
+</device>
+<device name="S8R6" package="BUZZER-S8R12">
 <connects>
 <connect gate="G$1" pin="GND" pad="P$1"/>
 <connect gate="G$1" pin="VIN" pad="P$2"/>
