@@ -41,7 +41,7 @@
 
 //! Размер линейного буфера для накопления UBX сообщений
 /*! Должен быть не меньше чем самое большое обрабатываемое UBX сообщение */
-#define ITS_SINS_GPS_UBX_SPARSER_BUFFER_SIZE (100)
+#define ITS_SINS_GPS_UBX_SPARSER_BUFFER_SIZE (1000)
 
 //! Максимальное количество байт обрабатываемое за один вызов gps_poll
 #define ITS_SINS_GPS_MAX_POLL_SIZE (ITS_SINS_GPS_UART_CYCLE_BUFFER_SIZE)
