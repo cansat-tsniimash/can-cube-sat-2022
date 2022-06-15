@@ -207,66 +207,66 @@ static void _ubx_parse_rxm_svsi(const uint8_t* payload, ubx_any_packet_t* packet
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_num(ubx_rxmsvsi_packet_t packet)
+uint8_t ubx_parse_rxm_svsi_SV_num(const ubx_rxmsvsi_packet_t * packet)
 {
-	return packet.numSV;
+	return packet->numSV;
 }
 
 
-int ubx_parse_rxm_svsi_SV(ubx_rxmsvsi_packet_t packet, uint8_t SV_index, ubx_rxmsvsi_SV_packet_t * SV_packet)
+int ubx_parse_rxm_svsi_SV(const ubx_rxmsvsi_packet_t * packet, uint8_t SV_index, ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
 	if (SV_index < ubx_parse_rxm_svsi_SV_num(packet))
 	{
-		SV_packet->svid   =          *(packet.SVbuf_ptr + 0 + 6 * SV_index);
-		SV_packet->svFlag =          *(packet.SVbuf_ptr + 1 + 6 * SV_index);
-		SV_packet->azim   =  _read_i16(packet.SVbuf_ptr + 2 + 6 * SV_index);
-		SV_packet->elev   = *((int8_t*)packet.SVbuf_ptr + 4 + 6 * SV_index);
-		SV_packet->age    =          *(packet.SVbuf_ptr + 5 + 6 * SV_index);
+		SV_packet->svid   =          *(packet->SVbuf_ptr + 0 + 6 * SV_index);
+		SV_packet->svFlag =          *(packet->SVbuf_ptr + 1 + 6 * SV_index);
+		SV_packet->azim   =  _read_i16(packet->SVbuf_ptr + 2 + 6 * SV_index);
+		SV_packet->elev   = *((int8_t*)packet->SVbuf_ptr + 4 + 6 * SV_index);
+		SV_packet->age    =          *(packet->SVbuf_ptr + 5 + 6 * SV_index);
 		return 0;
 	}
 	return EADDRNOTAVAIL;
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_t SV_packet)
+uint8_t ubx_parse_rxm_svsi_SV_ura(const ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
-	return SV_packet.svFlag & 0x0F;
+	return SV_packet->svFlag & 0x0F;
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_healthy(ubx_rxmsvsi_SV_packet_t SV_packet)
+uint8_t ubx_parse_rxm_svsi_SV_healthy(const ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
-	return (SV_packet.svFlag & (1 << 4)) >> 4;
+	return (SV_packet->svFlag & (1 << 4)) >> 4;
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_ephVal(ubx_rxmsvsi_SV_packet_t SV_packet)
+uint8_t ubx_parse_rxm_svsi_SV_ephVal(const ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
-	return (SV_packet.svFlag & (1 << 5)) >> 5;
+	return (SV_packet->svFlag & (1 << 5)) >> 5;
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_almVal(ubx_rxmsvsi_SV_packet_t SV_packet)
+uint8_t ubx_parse_rxm_svsi_SV_almVal(const ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
-	return (SV_packet.svFlag & (1 << 6)) >> 6;
+	return (SV_packet->svFlag & (1 << 6)) >> 6;
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_notAvail(ubx_rxmsvsi_SV_packet_t SV_packet)
+uint8_t ubx_parse_rxm_svsi_SV_notAvail(const ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
-	return (SV_packet.svFlag & (1 << 7)) >> 7;
+	return (SV_packet->svFlag & (1 << 7)) >> 7;
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_almAge(ubx_rxmsvsi_SV_packet_t SV_packet)
+uint8_t ubx_parse_rxm_svsi_SV_almAge(const ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
-	return SV_packet.age & 0x0F;
+	return SV_packet->age & 0x0F;
 }
 
 
-uint8_t ubx_parse_rxm_svsi_SV_ephAge(ubx_rxmsvsi_SV_packet_t SV_packet)
+uint8_t ubx_parse_rxm_svsi_SV_ephAge(const ubx_rxmsvsi_SV_packet_t * SV_packet)
 {
-	return (SV_packet.age >> 4) & 0x0F;
+	return (SV_packet->age >> 4) & 0x0F;
 }
 
 
@@ -281,86 +281,86 @@ static void _ubx_parse_nav_svinfo(const uint8_t* payload, ubx_any_packet_t* pack
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_num(ubx_navsvinfo_packet_t packet)
+uint8_t ubx_parse_nav_svinfo_CH_num(const ubx_navsvinfo_packet_t * packet)
 {
-	return packet.numCh;
+	return packet->numCh;
 }
 
 
-int ubx_parse_nav_svinfo_CH(ubx_navsvinfo_packet_t packet, uint8_t CH_index, ubx_navsvinfo_CH_packet_t * CH_packet)
+int ubx_parse_nav_svinfo_CH(const ubx_navsvinfo_packet_t * packet, uint8_t CH_index, ubx_navsvinfo_CH_packet_t * CH_packet)
 {
 	if (CH_index < ubx_parse_nav_svinfo_CH_num(packet))
 	{
-		CH_packet->chn     =          *(packet.CHbuf_ptr + 0 + 12 * CH_index);
-		CH_packet->svid    =          *(packet.CHbuf_ptr + 1 + 12 * CH_index);
-		CH_packet->flags   =          *(packet.CHbuf_ptr + 2 + 12 * CH_index);
-		CH_packet->quality =          *(packet.CHbuf_ptr + 3 + 12 * CH_index);
-		CH_packet->cno     =          *(packet.CHbuf_ptr + 4 + 12 * CH_index);
-		CH_packet->elev    = *((int8_t*)packet.CHbuf_ptr + 5 + 12 * CH_index);
-		CH_packet->azim    =  _read_i16(packet.CHbuf_ptr + 6 + 12 * CH_index);
-		CH_packet->prRes   =  _read_i32(packet.CHbuf_ptr + 8 + 12 * CH_index);
+		CH_packet->chn     =          *(packet->CHbuf_ptr + 0 + 12 * CH_index);
+		CH_packet->svid    =          *(packet->CHbuf_ptr + 1 + 12 * CH_index);
+		CH_packet->flags   =          *(packet->CHbuf_ptr + 2 + 12 * CH_index);
+		CH_packet->quality =          *(packet->CHbuf_ptr + 3 + 12 * CH_index);
+		CH_packet->cno     =          *(packet->CHbuf_ptr + 4 + 12 * CH_index);
+		CH_packet->elev    = *((int8_t*)packet->CHbuf_ptr + 5 + 12 * CH_index);
+		CH_packet->azim    =  _read_i16(packet->CHbuf_ptr + 6 + 12 * CH_index);
+		CH_packet->prRes   =  _read_i32(packet->CHbuf_ptr + 8 + 12 * CH_index);
 		return 0;
 	}
 	return EADDRNOTAVAIL;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_chipGen(ubx_navsvinfo_packet_t packet)
+uint8_t ubx_parse_nav_svinfo_chipGen(const ubx_navsvinfo_packet_t * packet)
 {
-	return packet.globalFlags & 0x07;
+	return packet->globalFlags & 0x07;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_svUsed(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_svUsed(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return CH_packet.flags & 0x01;
+	return CH_packet->flags & 0x01;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_diffCorr(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_diffCorr(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return (CH_packet.flags & (1 << 1)) >> 1;
+	return (CH_packet->flags & (1 << 1)) >> 1;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_orbitAvail(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_orbitAvail(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return (CH_packet.flags & (1 << 2)) >> 2;
+	return (CH_packet->flags & (1 << 2)) >> 2;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_orbitEph(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_orbitEph(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return (CH_packet.flags & (1 << 3)) >> 3;
+	return (CH_packet->flags & (1 << 3)) >> 3;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_unhealthy(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_unhealthy(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return (CH_packet.flags & (1 << 4)) >> 4;
+	return (CH_packet->flags & (1 << 4)) >> 4;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_orbitAlm(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_orbitAlm(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return (CH_packet.flags & (1 << 5)) >> 5;
+	return (CH_packet->flags & (1 << 5)) >> 5;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_orbitAop(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_orbitAop(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return (CH_packet.flags & (1 << 6)) >> 6;
+	return (CH_packet->flags & (1 << 6)) >> 6;
 }
 
 
-uint8_t ubx_parse_nav_svinfo_CH_smoothed(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_smoothed(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return (CH_packet.flags & (1 << 7)) >> 7;
+	return (CH_packet->flags & (1 << 7)) >> 7;
 }
 
-uint8_t ubx_parse_nav_svinfo_CH_quality(ubx_navsvinfo_CH_packet_t CH_packet)
+uint8_t ubx_parse_nav_svinfo_CH_quality(const ubx_navsvinfo_CH_packet_t * CH_packet)
 {
-	return CH_packet.quality & 0x0F;
+	return CH_packet->quality & 0x0F;
 }
 
 
@@ -402,6 +402,10 @@ int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet
 
 	case UBX_PID_RXM_SVSI:
 		_ubx_parse_rxm_svsi(payload_start, packet);
+		break;
+
+	case UBX_PID_NAV_SVINFO:
+		_ubx_parse_nav_svinfo(payload_start, packet);
 		break;
 
 	default:

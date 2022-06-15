@@ -77,7 +77,6 @@ void ubx_sparser_set_packet_callback(ubx_sparser_ctx_t * ctx, ubx_sparser_packet
 ){
 	ctx->packet_callback = callback;
 	ctx->packet_callback_userarg = userarg;
-
 }
 
 

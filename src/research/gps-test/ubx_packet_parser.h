@@ -26,15 +26,66 @@
 typedef enum ubx_pid_t
 {
 	UBX_PID_NAV_SOL = 0x0106,
-	UBX_PID_TIM_TP  = 0x0d01,
 	UBX_PID_NAV_TIMEGPS = 0x0120,
+	UBX_PID_NAV_SVINFO = 0x0130,
+	UBX_PID_TIM_TP  = 0x0d01,
 	UBX_PID_CFG_NACK = 0x0500,
 	UBX_PID_CFG_ACK  = 0x0501,
 	UBX_PID_MON_HW2 = 0x0A0B,
 	UBX_PID_MON_HW = 0x0A09,
 	UBX_PID_RXM_SVSI = 0x0220,
-	UBX_PID_NAV_SVINFO = 0x0130,
 } ubx_pid_t;
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// GPS-TIME, TIM-TP
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+//! Флаги валидности времени из пакета gpstime
+typedef enum ubx_nav_gpstime_flags_t
+{
+	//! время недели GPS достоверно (iTOW и fTOW)
+	UBX_NAVGPSTIME_FLAGS__TOW_VALID = 0x01 << 0,
+	//! номер недели GPS достоверен
+	UBX_NAVGPSTIME_FLAGS__WEEK_VALID = 0x01 << 1,
+	//!  скачок секунд GPS достоверен
+	UBX_NAVGPSTIME_FLAGS__LEAPS_VALID = 0x01 << 2
+} ubx_nav_gpstime_flags_t;
+
+
+//! Пакет GPS-TIME
+typedef struct ubx_gpstime_packet_t
+{
+	//! Время недели GPS для эпохи навигации
+	uint32_t tow_ms;
+	//! Дробная часть iTOW (диапазон ±500000).
+	//! Точность времени недели GPS: (iTOW · 1e-3) + (fTOW · 1e-9)
+	int32_t ftow;
+	//! Номер недели эпохи навигации
+	uint16_t week;
+	//! Скачок секунд GPS (GPS-UTC)
+	int8_t leaps;
+	//! Флаги достоверности (смотри ubx_nav_gpstime_flags_t)
+	uint8_t valid_flags;
+	//! Оценка точности времени
+	uint32_t t_acc;
+} ubx_gpstime_packet_t;
+
+
+//! Пакет TIM-TP
+typedef struct ubx_timtp_packet_t
+{
+	//! Номер недели эпохи навигации
+	uint16_t week;
+	//! Время недели GPS для эпохи навигации
+	uint32_t tow_ms;
+} ubx_timtp_packet_t;
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// NAV-SOL
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 //! тип FIX
@@ -71,44 +122,7 @@ typedef enum ubx_nav_sol_flags_t
 } ubx_nav_sol_flags_t;
 
 
-//! Флаги валидности времени из пакета gpstime
-typedef enum ubx_nav_gpstime_flags_t
-{
-	//! время недели GPS достоверно (iTOW и fTOW)
-	UBX_NAVGPSTIME_FLAGS__TOW_VALID = 0x01 << 0,
-	//! номер недели GPS достоверен
-	UBX_NAVGPSTIME_FLAGS__WEEK_VALID = 0x01 << 1,
-	//!  скачок секунд GPS достоверен
-	UBX_NAVGPSTIME_FLAGS__LEAPS_VALID = 0x01 << 2
-} ubx_nav_gpstime_flags_t;
-
-//! Пакет gpstime
-typedef struct ubx_gpstime_packet_t
-{
-	//! Время недели GPS для эпохи навигации
-	uint32_t tow_ms;
-	//! Дробная часть iTOW (диапазон ±500000).
-	//! Точность времени недели GPS: (iTOW · 1e-3) + (fTOW · 1e-9)
-	int32_t ftow;
-	//! Номер недели эпохи навигации
-	uint16_t week;
-	//! Скачок секунд GPS (GPS-UTC)
-	int8_t leaps;
-	//! Флаги достоверности (смотри ubx_nav_gpstime_flags_t)
-	uint8_t valid_flags;
-	//! Оценка точности времени
-	uint32_t t_acc;
-} ubx_gpstime_packet_t;
-
-
-//! Пакет timtp
-typedef struct ubx_timtp_packet_t
-{
-	uint16_t week;
-	uint32_t tow_ms;
-} ubx_timtp_packet_t;
-
-
+//! NAV-SOL
 typedef struct ubx_navsol_packet_t
 {
 	//! Время недели GPS для эпохи навигации
@@ -136,6 +150,11 @@ typedef struct ubx_navsol_packet_t
 } ubx_navsol_packet_t;
 
 
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// ACK, NACK
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
 //! Подтверждение получения валидного конфигурационного пакета
 typedef struct ubx_ack_packet_t
 {
@@ -150,6 +169,12 @@ typedef struct ubx_nack_packet_t
 	//! Идентификатор пакета
 	ubx_pid_t packet_pid;
 } ubx_nack_packet_t;
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// MON-HW2
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 //! Сообщение об ошибке в полученном конфигурационном пакете
 typedef struct ubx_monhw2_packet_t
@@ -177,6 +202,12 @@ typedef struct ubx_monhw2_packet_t
 	/* Слово состояния теста POST*/
 	uint32_t postStatus;
 } ubx_monhw2_packet_t;
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// MON-HW
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
 
 //! Сообщение об ошибке в полученном конфигурационном пакете
 typedef struct ubx_monhw_packet_t
@@ -216,6 +247,27 @@ typedef struct ubx_monhw_packet_t
 	uint32_t pullL;
 } ubx_monhw_packet_t;
 
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// RXM-SVSI
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+//! Различные флаги из RXM-SVSI
+/*! Эти флаги делят поле на пару со значением URA */
+typedef enum ubx_rxm_svsi_flags_t
+{
+	//! Спутник здоров!
+	UBX_RXMSVSI_FLAGS__HEALTHY		= 0x01 << 4,
+	//! Эфемериды спутника валидны
+	UBX_RXMSVSI_FLAGS__EPH_VAL		= 0x01 << 5,
+	//! Альманах спутника валиден
+	UBX_RXMSVSI_FLAGS__ALM_VAL		= 0x01 << 6,
+	//! Спутник не доступен
+	UBX_RXMSVSI_FLAGS__NOT_AVAIL	= 0x01 << 7,
+} ubx_rxm_svsi_flags_t;
+
+
 //! SV Status Info
 typedef struct ubx_rxmsvsi_packet_t
 {
@@ -229,8 +281,12 @@ typedef struct ubx_rxmsvsi_packet_t
 	/* Количество блоков данных, следующих далее, по одному блоку на спутник.*/
 	uint8_t numSV;
 	/* Начало повторяющихся блоков(повторяются numSV раз) */
-	uint8_t* SVbuf_ptr;
+	const uint8_t* SVbuf_ptr;
 } ubx_rxmsvsi_packet_t;
+
+
+// Возвращает количество блоков данных, следующих далее, по одному блоку на спутник.
+uint8_t ubx_parse_rxm_svsi_SV_num(const ubx_rxmsvsi_packet_t * packet);
 
 
 // SV Status Info информация о спутниуах
@@ -238,7 +294,7 @@ typedef struct ubx_rxmsvsi_SV_packet_t
 {
 	/* Идентификатор спутника */
 	uint8_t svid;
-	/* Информационные флаги */
+	/* Информационные флаги и URA (ubx_rxm_svsi_flags_t) */
 	uint8_t svFlag;
 	/* Азимут */
 	int16_t azim;
@@ -247,6 +303,67 @@ typedef struct ubx_rxmsvsi_SV_packet_t
 	/* Возврат альманаха и эфемерид */
 	uint8_t age;
 } ubx_rxmsvsi_SV_packet_t;
+
+
+/*
+	Функция читает из сообщения RXM-SVSI данные по конкретному спутнику
+	Аргументы:
+	packet    - пакет формата RXM-SVSI
+	SV_index  - индекс спутника (от 0 до numSV-1). Количество спутников может быть прочитано
+	функцией ubx_parse_rxm_svsi_SV_num
+	SV_packet - указатель на структуру, в которую будет записан пакет.
+	Возвращает: 0 если чтение произошло успеншно и EADDRNOTAVAIL если индекс был задан неверно.
+*/
+int ubx_parse_rxm_svsi_SV(const ubx_rxmsvsi_packet_t * packet, uint8_t SV_index, ubx_rxmsvsi_SV_packet_t* SV_packet);
+
+
+// Возвращает показатель качества (URA) в диапазоне 0..15 из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_ura(const ubx_rxmsvsi_SV_packet_t * SV_packet);
+
+// Возвращает флаг работоспособности спутника из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_healthy(const ubx_rxmsvsi_SV_packet_t * SV_packet);
+
+// Возвращает флаг достоверности эфемерид из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_ephVal(const ubx_rxmsvsi_SV_packet_t * SV_packet);
+
+// Возвращает флаг достоверности альманаха из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_almVal(const ubx_rxmsvsi_SV_packet_t * SV_packet);
+
+// Возвращает флаг доступности спутника из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_notAvail(const ubx_rxmsvsi_SV_packet_t * SV_packet);
+
+// Возвращает возраст ALM (альманах) в днях со смещением 4 из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_almAge(const ubx_rxmsvsi_SV_packet_t * SV_packet);
+
+// Возвращает возраст EPH (эфемериды) в часах со смещением 4 из блока данных о спутнике пакета RXM-SVSI
+uint8_t ubx_parse_rxm_svsi_SV_ephAge(const ubx_rxmsvsi_SV_packet_t * SV_packet);
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// NAV-SVSI
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+//! Флаги разного использования спутника в сообщении NAV_SV_INFO
+typedef enum ubx_nav_svinfo_flags_t
+{
+	//! Спутник используется для навигации
+	UBX_NAVSVINFO_FLAGS__SV_USED	= 0x01 << 0,
+	//! Для спутника есть параметры диф коррекции
+	UBX_NAVSVINFO_FLAGS__DIFF_COR	= 0x01 << 1,
+	//! Для спутника есть параметры орбиты
+	UBX_NAVSVINFO_FLAGS__ORB_AVAIL	= 0x01 << 2,
+	//! Параметры орбиты из эфемирид
+	UBX_NAVSVINFO_FLAGS__ORB_EPH	= 0x01 << 3,
+	//! Спутник вреден для здоровья и не должен использоваться
+	UBX_NAVSVINFO_FLAGS__UNHEALTHY	= 0x01 << 4,
+	//! Параметры орбиты из альманаха плюс
+	UBX_NAVSVINFO_FLAGS__ORB_ALM	= 0x01 << 5,
+	//! Параметры орбиты из автономного AssistNow
+	UBX_NAVSVINFO_FLAGS__ORB_AOP	= 0x01 << 6,
+	//! Используется какое-то сглаживание несущей (пишут смотри при Precise Point Smoothing)
+	UBX_NAVSVINFO_FLAGS__SMOOTH		= 0x01 << 7,
+} ubx_nav_svinfo_flags_t;
 
 
 // Space Vehicle Information
@@ -260,7 +377,7 @@ typedef struct ubx_navsvinfo_packet_t
 	/* Количество видимых спутников*/
 	uint8_t globalFlags;
 	/* Начало повторяющихся блоков(повторяются numSV раз) */
-	uint8_t* CHbuf_ptr;
+	const uint8_t* CHbuf_ptr;
 } ubx_navsvinfo_packet_t;
 
 
@@ -271,7 +388,7 @@ typedef struct ubx_navsvinfo_CH_packet_t
 	uint8_t chn;
 	/* Идентификатор спутника */
 	uint8_t svid;
-	/* Информационные флаги */
+	/* Информационные флаги (ubx_nav_svinfo_flags_t)*/
 	uint8_t flags;
 	/* Информационные флаги */
 	uint8_t quality;
@@ -284,6 +401,46 @@ typedef struct ubx_navsvinfo_CH_packet_t
 	/* Pseudo range residual in centimetres */
 	int32_t prRes;
 } ubx_navsvinfo_CH_packet_t;
+
+
+// Возвращает количество блоков данных, следующих далее, по одному блоку на канал.
+uint8_t ubx_parse_nav_svinfo_CH_num(const ubx_navsvinfo_packet_t * packet);
+
+/*
+	Функция читает из сообщения NAV-SVINFO данные по конкретному каналу
+	Аргументы:
+	packet    - пакет формата NAV-SVINFO
+	SV_index  - индекс канала (от 0 до numCh-1). Количество каналов может быть прочитано
+	функцией ubx_parse_nav_svinfo_CH_num
+	CH_packet - указатель на структуру, в которую будет записан пакет.
+	Возвращает: 0 если чтение произошло успеншно и EADDRNOTAVAIL если индекс был задан неверно.
+*/
+int ubx_parse_nav_svinfo_CH(const ubx_navsvinfo_packet_t * packet, uint8_t CH_index, ubx_navsvinfo_CH_packet_t* CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_chipGen(const ubx_navsvinfo_packet_t * packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_svUsed(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_diffCorr(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitAvail(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitEph(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_unhealthy(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitAlm(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_orbitAop(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_smoothed(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+uint8_t ubx_parse_nav_svinfo_CH_quality(const ubx_navsvinfo_CH_packet_t * CH_packet);
+
+
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+// =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 
 //! Структура, включающая данные любого пакета
@@ -304,6 +461,7 @@ typedef struct ubx_any_packet_t
 		ubx_navsvinfo_packet_t navsvinfo;
 	} packet;
 } ubx_any_packet_t;
+
 
 //! Извлечение идентификатора пакета из заголовка собщения
 uint16_t ubx_packet_pid(const uint8_t * packet_header);
@@ -329,76 +487,6 @@ uint8_t ubx_uint16crc_get_crcb(uint16_t crc16);
 //! Сборка PID значения из отдельных значений class и packet_id
 uint16_t ubx_make_pid(uint8_t packet_class, uint8_t packet_id);
 
-
-// Возвращает количество блоков данных, следующих далее, по одному блоку на спутник.
-uint8_t ubx_parse_rxm_svsi_SV_num (ubx_rxmsvsi_packet_t packet);
-
-/* 
-	Функция читает из сообщения RXM-SVSI данные по конкретному спутнику
-	Аргументы:
-	packet    - пакет формата RXM-SVSI
-	SV_index  - индекс спутника (от 0 до numSV-1). Количество спутников может быть прочитано
-	функцией ubx_parse_rxm_svsi_SV_num
-	SV_packet - указатель на структуру, в которую будет записан пакет.
-	Возвращает: 0 если чтение произошло успеншно и EADDRNOTAVAIL если индекс был задан неверно.
-*/
-int ubx_parse_rxm_svsi_SV(ubx_rxmsvsi_packet_t packet, uint8_t SV_index, ubx_rxmsvsi_SV_packet_t* SV_packet);
-
-// Возвращает показатель качества (URA) в диапазоне 0..15 из блока данных о спутнике пакета RXM-SVSI
-uint8_t ubx_parse_rxm_svsi_SV_ura(ubx_rxmsvsi_SV_packet_t SV_packet);
-
-// Возвращает флаг работоспособности спутника из блока данных о спутнике пакета RXM-SVSI
-uint8_t ubx_parse_rxm_svsi_SV_healthy(ubx_rxmsvsi_SV_packet_t SV_packet);
-
-// Возвращает флаг достоверности эфемерид из блока данных о спутнике пакета RXM-SVSI
-uint8_t ubx_parse_rxm_svsi_SV_ephVal(ubx_rxmsvsi_SV_packet_t SV_packet);
-
-// Возвращает флаг достоверности альманаха из блока данных о спутнике пакета RXM-SVSI
-uint8_t ubx_parse_rxm_svsi_SV_almVal(ubx_rxmsvsi_SV_packet_t SV_packet);
-
-// Возвращает флаг доступности спутника из блока данных о спутнике пакета RXM-SVSI
-uint8_t ubx_parse_rxm_svsi_SV_notAvail(ubx_rxmsvsi_SV_packet_t SV_packet);
-
-// Возвращает возраст ALM (альманах) в днях со смещением 4 из блока данных о спутнике пакета RXM-SVSI
-uint8_t ubx_parse_rxm_svsi_SV_almAge(ubx_rxmsvsi_SV_packet_t SV_packet);
-
-// Возвращает возраст EPH (эфемериды) в часах со смещением 4 из блока данных о спутнике пакета RXM-SVSI
-uint8_t ubx_parse_rxm_svsi_SV_ephAge(ubx_rxmsvsi_SV_packet_t SV_packet);
-
-
-// Возвращает количество блоков данных, следующих далее, по одному блоку на канал.
-uint8_t ubx_parse_nav_svinfo_CH_num(ubx_navsvinfo_packet_t packet);
-
-/*
-	Функция читает из сообщения NAV-SVINFO данные по конкретному каналу
-	Аргументы:
-	packet    - пакет формата NAV-SVINFO
-	SV_index  - индекс канала (от 0 до numCh-1). Количество каналов может быть прочитано
-	функцией ubx_parse_nav_svinfo_CH_num
-	CH_packet - указатель на структуру, в которую будет записан пакет.
-	Возвращает: 0 если чтение произошло успеншно и EADDRNOTAVAIL если индекс был задан неверно.
-*/
-int ubx_parse_nav_svinfo_CH(ubx_navsvinfo_packet_t packet, uint8_t CH_index, ubx_navsvinfo_CH_packet_t* CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_chipGen(ubx_navsvinfo_packet_t packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_svUsed(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_diffCorr(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_orbitAvail(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_orbitEph(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_unhealthy(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_orbitAlm(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_orbitAop(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_smoothed(ubx_navsvinfo_CH_packet_t CH_packet);
-
-uint8_t ubx_parse_nav_svinfo_CH_quality(ubx_navsvinfo_CH_packet_t CH_packet);
 
 //! Разбор тела пакета
 int ubx_parse_any_packet(const uint8_t * packet_start, ubx_any_packet_t * packet);

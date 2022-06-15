@@ -6,6 +6,7 @@
  */
 
 #include "gps.h"
+#include "serial.h"
 
 #include <time.h>
 #include <errno.h>
@@ -14,7 +15,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <windows.h>
+extern serial * port;
 
 #define ITS_SINS_GPS_UART_CYCLE_BUFFER_SIZE 10000
 #define ITS_SINS_GPS_UBX_SPARSER_BUFFER_SIZE 10000
@@ -22,8 +23,6 @@
 #define ITS_SINS_GPS_CONFIGURE_ATTEMPTS 5
 #define ITS_SINS_GPS_CONFIGURE_TIMEOUT 10
 #define ITS_SINS_GPS_MAX_POLL_SIZE 10
-
-extern HANDLE hSerial;
 
 // ==========================================
 // Это для фонового приёма пакетиков
@@ -199,14 +198,11 @@ static int _send_conf_packet(const uint8_t * packet)
 	};
 	
 	// Отправляем синхрослово
-	DWORD iSize;
-	WriteFile(hSerial, (uint8_t*)syncword, sizeof(syncword), &iSize, NULL);
+	serial_write(port, (uint8_t*)syncword, sizeof(syncword));
 	// Отправляем сам пакет
-	WriteFile(hSerial, (uint8_t*)packet, packet_size, &iSize, NULL);
-
+	serial_write(port, (uint8_t*)packet, packet_size);
 	// Отправляем его контрольную сумму
-	WriteFile(hSerial, (uint8_t*)crc_bytes, sizeof(crc_bytes), &iSize, NULL);
-
+	serial_write(port, (uint8_t*)crc_bytes, sizeof(crc_bytes));
 	//printf("gps: sent gps config packet pid 0x%04X\n", ubx_packet_pid(packet));
 	return 0;
 }
@@ -372,13 +368,7 @@ void gps_configure_begin()
 	if (state->enabled)
 		return; // Мы уже конфигурируемся
 
-	//printf("gps: configuration start\n");
-	//gps_power_off();
-	//HAL_Delay(100);
-	Sleep(100);
-	//gps_power_on();
-	//HAL_Delay(10);
-	Sleep(100);
+	printf("gps: configuration start\n");
 
 	state->packet_ptr = ublox_neo6_cfg_msgs;
 	state->sent_packet_ack_status = GPS_CFG_ACK_STATUS_IDLE;
