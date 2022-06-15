@@ -33,47 +33,50 @@
 #define BME_PRESSURE_THRESHOLD_LOW (31*1000) // в даташите 30*1000
 #define BME_PRESSURE_THRESHOLD_HI (108*1000) // в даташите 110*1000
 
+// Коэффициент ускорения вычислительного такта
+#define TICK_MODIFIER (8)
+
 //! Длина одного такта в мс
-#define TICK_LEN_MS (200)
+#define TICK_LEN_MS (200/TICK_MODIFIER)
 //! Сколько времени диод будет гореть а не мигать после рестарта (в мс)
 #define LED_RESTART_LOCK (1500)
 
 //! Периодичность выдачи BME пакета (в тактах)
-#define PACKET_PERIOD_BME (5)
-#define PACKET_OFFSET_BME (0)
+#define PACKET_PERIOD_BME (5*TICK_MODIFIER)
+#define PACKET_OFFSET_BME (0*TICK_MODIFIER)
 //! Периодичность выдачи пакета MS5611
-#define PACKET_PERIOD_MS5611 (5)
-#define PACKET_OFFSET_MS5611 (1)
+#define PACKET_PERIOD_MS5611 (5*TICK_MODIFIER)
+#define PACKET_OFFSET_MS5611 (1*TICK_MODIFIER)
 //! Периодичность выдачи ME202 пакета (в тактах)
-#define PACKET_PERIOD_ME2O2 (5)
-#define PACKET_OFFSET_ME2O2 (2)
+#define PACKET_PERIOD_ME2O2 (5*TICK_MODIFIER)
+#define PACKET_OFFSET_ME2O2 (2*TICK_MODIFIER)
 //! Периодичность выдачи MICS6814 пакета (в тактах)
-#define PACKET_PERIOD_MICS6814 (5)
-#define PACKET_OFFSET_MICS6814 (3)
+#define PACKET_PERIOD_MICS6814 (5*TICK_MODIFIER)
+#define PACKET_OFFSET_MICS6814 (3*TICK_MODIFIER)
 //! Периодичность выдачи данных со встроенных сенсоров (в тактах)
-#define PACKET_PERIOD_INTEGRATED (5)
-#define PACKET_OFFSET_INTEGRATED (4)
+#define PACKET_PERIOD_INTEGRATED (5*TICK_MODIFIER)
+#define PACKET_OFFSET_INTEGRATED (4*TICK_MODIFIER)
 // ! Периодичность выдачи последних данных с дозиметра (в тактах)
-#define PACKET_PERIOD_DOSIM_MOMENTARY (5)
-#define PACKET_OFFSET_DOSIM_MOMENTARY (0)
+#define PACKET_PERIOD_DOSIM_MOMENTARY (5*TICK_MODIFIER)
+#define PACKET_OFFSET_DOSIM_MOMENTARY (0*TICK_MODIFIER)
 // ! Периодичность выдачи накопленных данных с дозиметра (в тактах)
-#define PACKET_PERIOD_DOSIM_WINDOWED (5)
-#define PACKET_OFFSET_DOSIM_WINDOWED (0)
+#define PACKET_PERIOD_DOSIM_WINDOWED (5*TICK_MODIFIER)
+#define PACKET_OFFSET_DOSIM_WINDOWED (2*TICK_MODIFIER)
 //! Периодичность выдачи данных с ДНК (в тактах)
-#define PACKET_PERIOD_DNA (5)
-#define PACKET_OFFSET_DNA (1)
+//#define PACKET_PERIOD_DNA (5*TICK_MODIFIER)
+//#define PACKET_OFFSET_DNA (1*TICK_MODIFIER)
 //! Периодичность выдачи собственной статистики (в тактах)
-#define PACKET_PERIOD_OWN_STATS (15)
-#define PACKET_OFFSET_OWN_STATS (7)
+#define PACKET_PERIOD_OWN_STATS (15*TICK_MODIFIER)
+#define PACKET_OFFSET_OWN_STATS (7*TICK_MODIFIER)
 //! Периодичность выдачи its-link статистики (в тактах)
-#define PACKET_PERIOD_ITS_LINK_STATS (15)
-#define PACKET_OFFSET_ITS_LINK_STATS (8)
+#define PACKET_PERIOD_ITS_LINK_STATS (15*TICK_MODIFIER)
+#define PACKET_OFFSET_ITS_LINK_STATS (8*TICK_MODIFIER)
 //! Периодичность выдачи информации о состоянии управления компрессором
-#define PACKET_PERIOD_CCONTROL (5)
-#define PACKET_OFFSET_CCONTROL (2)
+#define PACKET_PERIOD_CCONTROL (5*TICK_MODIFIER)
+#define PACKET_OFFSET_CCONTROL (2*TICK_MODIFIER)
 //! Периодичность выдачи рапортов коммиссара
-#define PACKET_PERIOD_COMMISSAR_REPORT (25)
-#define PACKET_OFFSET_COMMISSAR_REPORT (10)
+#define PACKET_PERIOD_COMMISSAR_REPORT (25*TICK_MODIFIER)
+#define PACKET_OFFSET_COMMISSAR_REPORT (10*TICK_MODIFIER)
 
 
 //! Статистика об ошибках этого модуля
@@ -83,6 +86,8 @@ typedef struct its_pld_status_t
 	uint16_t resets_count;
 	//! Причина последней перезагрузки
 	uint16_t reset_cause;
+	//! Количество случаев затяжки такта
+	uint16_t rythm_broken;
 } its_pld_status_t;
 
 
@@ -198,19 +203,8 @@ int app_main()
 		// Планируем начало следующего
 		uint32_t next_tock_start_tick = tock_start_tick + TICK_LEN_MS;
 
-		// В начале такта включаем диод (если после загрузки прошло нужное время)
-		// И запоминаем не раньше какого времени нужно выключить светодиод
-		uint32_t led_off_tick;
-		if (HAL_GetTick() >= tick_led_unlock)
-		{
-			led_set(true);
-			led_off_tick = tock_start_tick + 10;
-		}
-		else
-		{
-			// Если еще не пора - то и выключать не будем диод в конце такта
-			led_off_tick = tick_led_unlock;
-		}
+		// В начале такта включаем диод
+		led_set(true);
 
 		// Проверяем входящие пакеты
 		_process_input_packets();
@@ -360,8 +354,31 @@ int app_main()
 				HAL_NVIC_SystemReset();
 		}
 
+		// Такт завершен, играемся с диодом
+		uint32_t led_off_tick;
+		if (HAL_GetTick() >= tick_led_unlock)
+		{
+			// Будем светить половину такта, но не меньше 2 миллисекунд
+			uint32_t off_delta = TICK_LEN_MS/5;
+			if (off_delta < 2)
+				off_delta = 2;
+
+			led_off_tick = tock_start_tick + off_delta;
+		}
+		else
+		{
+			// Если после ребута прошло недостаточно времени, посветим еще диодом
+			led_off_tick = tick_led_unlock;
+		}
 		// Ждем начала следующего такта
-		uint32_t now;
+		uint32_t now = HAL_GetTick();
+		if (now >= next_tock_start_tick)
+		{
+			// Если мы пришли сюда после того как такт нужно было завершить
+			// Отмечаем это
+			_status.rythm_broken++;
+		}
+
 		bool led_done  = false;
 		do {
 			now = HAL_GetTick();
