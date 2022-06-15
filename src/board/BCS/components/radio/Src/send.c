@@ -58,11 +58,9 @@ static int _radio_init(radio_t * server)
 
 			// Параметры пакетирования
 			//.spreading_factor = SX126X_LORA_SF_8,
-			.spreading_factor = SX126X_LORA_SF_6,
-			//.bandwidth = SX126X_LORA_BW_250,
-			.bandwidth = SX126X_LORA_BW_500,
-			//.coding_rate = SX126X_LORA_CR_4_8,
-			.coding_rate = SX126X_LORA_CR_4_5,
+			.spreading_factor = SX126X_LORA_SF_7,
+			.bandwidth = SX126X_LORA_BW_250,
+			.coding_rate = SX126X_LORA_CR_4_8,
 			.ldr_optimizations = false,
 	};
 
