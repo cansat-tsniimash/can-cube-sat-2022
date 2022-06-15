@@ -4,6 +4,10 @@
 
 #define RADIO_TX_COUNT_LOWER_BOUND 30
 #define RADIO_BUFFERED_COUNT 5
+// Время ожидания до следующего заполнения радиофрейма
+// Если будет слишком маленьким, то фреймы будут не успевать заполнятья
+// Если будет слишком большим, то в какой-то момент может закончиться
+// запас фреймов, и придется отправлять пустые
 #define RADIO_WAIT_PERIOD_START 10 //ms
 #define BUFFERED_COUNT_RECALCULATE_PERIOD 3
 

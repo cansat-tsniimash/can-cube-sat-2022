@@ -9,7 +9,7 @@
 #define COMPONENTS_RADIO_INC_PRIVATE_RADIO_HELP_H_
 
 #include "radio.h"
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 
 typedef struct  {

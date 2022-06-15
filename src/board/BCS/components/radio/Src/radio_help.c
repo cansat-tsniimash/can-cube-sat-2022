@@ -34,7 +34,7 @@ static int is_msg_banned(int msg_id)
 	return 0;
 }
 
-#define RADIO_SEND_BUF_SIZE 60
+#define RADIO_SEND_BUF_SIZE 100
 static msg_container arr_buf[RADIO_SEND_BUF_SIZE];
 static int arr_buf_size = 0;
 
@@ -120,6 +120,8 @@ static msg_container *get_best(int now) {
 	if (st_best) {
 		log_trace("chosen %d with coef %f, period %f, last %d, now %d",
 				st_best->id, coef_best, st_best->period, st_best->last, now);
+	} else {
+		log_trace("chosen none");
 	}
 	return st_best;
 }
@@ -231,7 +233,14 @@ int rbuf_fill(radio_t * server) {
 			msg_container *st = 0;
 			st = get_best(server->msg_count);
 			if (0 == st) {
-				break;
+				static uint8_t idle_count = 0;
+				mavlink_heartbeat_t mhb = {0};
+				mhb.system_status = idle_count++;
+				mavlink_message_t msg = {0};
+				mavlink_msg_heartbeat_encode(mavlink_system, 0, &msg, &mhb);
+				update_msg(&msg);
+
+				st = get_best(server->msg_count);
 			}
 
 			server->mav_buf.size = mavlink_msg_to_send_buffer(server->mav_buf.buf, &st->last_msg);
@@ -260,7 +269,7 @@ void rbuf_pull(radio_t * server) {
 
 void rbuf_reset(radio_t* server, radio_private_state_t* state) {
 	log_trace("radio reset");
-	timing_calc_init(server, state);
+	timing_calc_init(server, &state->timings);
 	server->radio_ring_buffer.put = 0;
 
 }
