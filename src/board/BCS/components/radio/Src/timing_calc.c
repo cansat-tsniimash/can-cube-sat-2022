@@ -1,10 +1,14 @@
 #include "../Inc_private/timing_calc.h"
 
-#define RADIO_TIMING_PANIC 5
+#define RADIO_TIMING_PANIC 1
 
-#define RADIO_TX_COUNT_LOWER_BOUND 30
+#define RADIO_TX_COUNT_LOWER_BOUND 4
 #define RADIO_BUFFERED_COUNT 5
-#define RADIO_WAIT_PERIOD_START 10 //ms
+// Время ожидания до следующего заполнения радиофрейма
+// Если будет слишком маленьким, то фреймы будут не успевать заполнятья
+// Если будет слишком большим, то в какой-то момент может закончиться
+// запас фреймов, и придется отправлять пустые
+#define RADIO_WAIT_PERIOD_START 1000 //ms
 #define BUFFERED_COUNT_RECALCULATE_PERIOD 3
 
 void timing_calc_init(radio_t* server, radio_timings_t* state) {
@@ -15,6 +19,7 @@ void timing_calc_init(radio_t* server, radio_timings_t* state) {
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 void timing_calc_finish_all_tx(radio_t* server, radio_timings_t* state) {
+	log_trace("RADIO timing: %d %d %d %d", state->buffered_packet_count, state->big_tx_count, state->min_tx_left, state->tx_count);
 	uint32_t cur_left_count = ring_buffer_get_avail(&server->radio_ring_buffer);
 	uint32_t last_left_count = state->last_left_count;
 
@@ -27,7 +32,7 @@ void timing_calc_finish_all_tx(radio_t* server, radio_timings_t* state) {
 	if (expected_left_count_next >= state->buffered_packet_count) {
 		wait_period = 0xFFFFFFFF;
 	} else {
-		uint32_t to_fill = RADIO_BUFFERED_COUNT - expected_left_count_next;
+		uint32_t to_fill = state->buffered_packet_count - expected_left_count_next;
 		wait_period = (RADIO_TX_PERIOD + RADIO_RX_PERIOD) / to_fill;
 	}
 	server->wait_period = wait_period;
