@@ -435,7 +435,7 @@ static void MX_IWDG_Init(void)
 #endif
   /* USER CODE END IWDG_Init 1 */
   hiwdg.Instance = IWDG;
-  hiwdg.Init.Prescaler = IWDG_PRESCALER_128;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_256;
   hiwdg.Init.Reload = 0xfff;
   if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
   {
