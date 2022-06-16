@@ -233,7 +233,7 @@ typedef struct ubx_monhw_packet_t
 	/* Маска выводов, которые использует Virtual Pin Manager */
 	uint32_t usedMask;
 	/* Массив привязок каждого из 17 физических выводов. */
-	uint8_t VP[17];
+	uint8_t VP[25];
 	/* Индикатор пропадания несущей (CW Jamming indicator), масштабированный
 	(0 = нет нарушения CW, 255 очень сильные нарушения CW). */
 	uint8_t jamInd;

@@ -184,14 +184,14 @@ static void _ubx_parse_mon_hw(const uint8_t* payload, ubx_any_packet_t* packet_)
 	packet->aPower     =         *(payload + 21);
 	packet->flags      =         *(payload + 22);
 	packet->usedMask   = _read_u32(payload + 24);
-	for (uint8_t i = 0; i < 17; i++)
+	for (uint8_t i = 0; i < 25; i++)
 	{
 		packet->VP[i] = *(payload + 28 + i);
 	}
-	packet->jamInd     =         *(payload + 45);
-	packet->pinIrq     = _read_u32(payload + 46);
-	packet->pullH      = _read_u32(payload + 52);
-	packet->pullL      = _read_u32(payload + 56);
+	packet->jamInd     =         *(payload + 53);
+	packet->pinIrq     = _read_u32(payload + 56);
+	packet->pullH      = _read_u32(payload + 60);
+	packet->pullL      = _read_u32(payload + 64);
 }
 
 
