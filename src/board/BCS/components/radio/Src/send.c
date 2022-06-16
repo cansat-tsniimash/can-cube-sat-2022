@@ -317,11 +317,11 @@ static void radio_loop(void *arg) {
 	its_rt_register_for_all(tid);
 	radio_private_state_t state = {0};
 	state.packet_done = 1;
-	int64_t now = esp_timer_get_time();
+	int64_t now = esp_timer_get_time() / 1000;
 
 	timing_calc_init(server, &state.timings);
 	while (1) {
-		now = esp_timer_get_time();
+		now = esp_timer_get_time() / 1000; 
 		mavlink_message_t incoming_msg = {0};
 		while (pdTRUE == xQueueReceive(tid.queue, &incoming_msg, 0))
 		{

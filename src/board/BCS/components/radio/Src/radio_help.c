@@ -257,8 +257,10 @@ int rbuf_fill(radio_t * server) {
 }
 
 radio_buf_t* rbuf_get(radio_t * server) {
-	log_trace("rbuf_get %d", server->radio_ring_buffer.get);
-	assert(ring_buffer_get_avail(&server->radio_ring_buffer) > 0);
+	log_trace("rbuf_get %d %d", server->radio_ring_buffer.get, ring_buffer_get_avail(&server->radio_ring_buffer));
+	if (ring_buffer_get_avail(&server->radio_ring_buffer) == 0) {
+		rbuf_fill(server);
+	}
 	return ring_buffer_get(&server->radio_ring_buffer);
 }
 void rbuf_pull(radio_t * server) {
