@@ -17,28 +17,34 @@ void packet_callback(void* arg, const ubx_any_packet_t* packet_)
 	switch (packet_->pid)
 	{
 	case UBX_PID_NAV_SOL: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_NAV_SOL\n");
 		const ubx_navsol_packet_t * packet = &packet_->packet.navsol;
 		printf("fix = %d\n", packet->gps_fix);
 		} break;
 
 	case UBX_PID_TIM_TP: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_TIM_TP\n");
 		} break;
 
 	case UBX_PID_NAV_TIMEGPS: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_NAV_TIMEGPS\n");
 		} break;
 
 	case UBX_PID_CFG_NACK: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_CFG_NACK\n");
 		} break;
 
 	case UBX_PID_CFG_ACK: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_CFG_ACK\n");
 		} break;
 
 	case UBX_PID_MON_HW2: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_MON_HW2\n");
 		const ubx_monhw2_packet_t* packet = &packet_->packet.monhw2;
 		printf("ofsI = %d\n",       packet->ofsI);
@@ -46,11 +52,12 @@ void packet_callback(void* arg, const ubx_any_packet_t* packet_)
 		printf("ofsQ = %d\n",       packet->ofsQ);
 		printf("magQ = %d\n",       packet->magQ);
 		printf("cfgSource = %d\n",  packet->cfgSource);
-		printf("lowLevCfg = %d\n",  packet->lowLevCfg);
+		printf("lowLevCfg = %ud\n", packet->lowLevCfg);
 		printf("postStatus = %d\n", packet->postStatus);
 		} break;
 
 	case UBX_PID_MON_HW: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_MON_HW\n");
 		const ubx_monhw_packet_t* packet = &packet_->packet.monhw;
 		printf("pinSel = %d\n",     packet->pinSel);
@@ -73,6 +80,7 @@ void packet_callback(void* arg, const ubx_any_packet_t* packet_)
 		} break;
 
 	case UBX_PID_RXM_SVSI: {
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_RXM_SVSI\n");
 		const ubx_rxmsvsi_packet_t* packet = &packet_->packet.rxmsvsi;
 		printf("iTOW = %d\n", packet->iTOW);
@@ -83,23 +91,23 @@ void packet_callback(void* arg, const ubx_any_packet_t* packet_)
 		for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_num(packet); i++)
 		{
 			ubx_parse_rxm_svsi_SV(packet, i, &SV_packet);
-			if (ubx_parse_rxm_svsi_SV_ura(&SV_packet) < 15)
-			{
-				printf("svid = %d\n", SV_packet.svid);
-				printf("SV_ura = %d\n", ubx_parse_rxm_svsi_SV_ura(&SV_packet));
-				printf("SV_healthy = %d\n", ubx_parse_rxm_svsi_SV_healthy(&SV_packet));
-				printf("SV_ephVal = %d\n", ubx_parse_rxm_svsi_SV_ephVal(&SV_packet));
-				printf("SV_almVal = %d\n", ubx_parse_rxm_svsi_SV_almVal(&SV_packet));
-				printf("SV_notAvail = %d\n", ubx_parse_rxm_svsi_SV_notAvail(&SV_packet));
-				printf("azim = %d\n", SV_packet.azim);
-				printf("elev = %d\n", SV_packet.elev);
-				printf("SV_almAge = %d\n", ubx_parse_rxm_svsi_SV_almAge(&SV_packet));
-				printf("SV_ephAge = %d\n", ubx_parse_rxm_svsi_SV_ephAge(&SV_packet));
-			}
+			printf("---\n");
+			printf("ch_index = %d\n", i);
+			printf("svid = %d\n", SV_packet.svid);
+			printf("SV_ura = %d\n", ubx_parse_rxm_svsi_SV_ura(&SV_packet));
+			printf("SV_healthy = %d\n", ubx_parse_rxm_svsi_SV_healthy(&SV_packet));
+			printf("SV_ephVal = %d\n", ubx_parse_rxm_svsi_SV_ephVal(&SV_packet));
+			printf("SV_almVal = %d\n", ubx_parse_rxm_svsi_SV_almVal(&SV_packet));
+			printf("SV_notAvail = %d\n", ubx_parse_rxm_svsi_SV_notAvail(&SV_packet));
+			printf("azim = %d\n", SV_packet.azim);
+			printf("elev = %d\n", SV_packet.elev);
+			printf("SV_almAge = %d\n", ubx_parse_rxm_svsi_SV_almAge(&SV_packet));
+			printf("SV_ephAge = %d\n", ubx_parse_rxm_svsi_SV_ephAge(&SV_packet));
 		}
 		} break;
 
 	case UBX_PID_NAV_SVINFO:
+		printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 		printf("UBX_PID_NAV_SVINFO\n"); {
 		const ubx_navsvinfo_packet_t * packet = &packet_->packet.navsvinfo;
 		printf("iTOW = %ld\n", (int64_t)packet->iTOW);
@@ -112,12 +120,13 @@ void packet_callback(void* arg, const ubx_any_packet_t* packet_)
 		for (int i = 0; i < channels_count; i++)
 		{
 			ubx_navsvinfo_CH_packet_t CH_packet;
+			printf("---\n");
 			printf("ch_index = %d\n", i);
 			ubx_parse_nav_svinfo_CH(packet, i, &CH_packet);
 			printf("ch_id = %d\n", (int)CH_packet.chn);
 			printf("sv_id = %d\n", (int)CH_packet.svid);
 			printf("c_no = %d\n", (int)CH_packet.cno);
-			printf("c_no = %d\n", (int)CH_packet.prRes);
+			printf("pr_res = %d\n", (int)CH_packet.prRes);
 			printf("ch_svUsed = %d\n", (int)ubx_parse_nav_svinfo_CH_svUsed(&CH_packet));
 			printf("ch_diffCorr = %d\n", (int)ubx_parse_nav_svinfo_CH_diffCorr(&CH_packet));
 			printf("ch_orbitAvail = %d\n", (int)ubx_parse_nav_svinfo_CH_orbitAvail(&CH_packet));
