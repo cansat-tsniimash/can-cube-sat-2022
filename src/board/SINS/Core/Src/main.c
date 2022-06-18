@@ -860,6 +860,7 @@ int main(void)
 
   		}
 
+  		int comissar_last_report_time = HAL_GetTick();
   		// Пашем, работяги
   		for (; ; )
   		{
@@ -946,7 +947,11 @@ int main(void)
   			mavlink_errors_packet();
   			mavlink_its_link_stats();
   			commissar_work();
-  			mavlink_comissar_report();
+  			if (comissar_last_report_time + 1000 >= HAL_GetTick())
+  			{
+  				mavlink_comissar_report();
+  				comissar_last_report_time  = HAL_GetTick();
+  			}
 
   			if (RCC_PLLSOURCE_HSI == __HAL_RCC_GET_PLL_OSCSOURCE())
   			{
