@@ -249,39 +249,25 @@ void on_gps_packet(void * arg, const ubx_any_packet_t * packet)
 			msg_sins_rxmsvsi.time_steady = HAL_GetTick();
 			msg_sins_rxmsvsi.num_vis     = packet->packet.rxmsvsi.numVis;
 			msg_sins_rxmsvsi.num_ch      = packet->packet.rxmsvsi.numSV;
-			ubx_rxmsvsi_SV_packet_t ubx_rxmsvsi_SV_packet_top[4];
 			ubx_rxmsvsi_SV_packet_t ubx_rxmsvsi_SV_packet;
+
+			msg_sins_rxmsvsi.satellites_with_ephs = 0;
+			msg_sins_rxmsvsi.satellites_with_alms = 0;
+			msg_sins_rxmsvsi.satellites_with_ephs_and_alms = 0;
+			msg_sins_rxmsvsi.sattelites_healthy = 0;
 			for (uint8_t i = 0; i < ubx_parse_rxm_svsi_SV_num(&packet->packet.rxmsvsi); i++)
 			{
 				ubx_parse_rxm_svsi_SV(&packet->packet.rxmsvsi, i, &ubx_rxmsvsi_SV_packet);
-				if (i < 4)
-				{
-					ubx_rxmsvsi_SV_packet_top[i] = ubx_rxmsvsi_SV_packet;
-				}
-				else
-				{
-					for (uint8_t j = 0; j < 4; j++)
-					{
-						if (ubx_parse_rxm_svsi_SV_ura(&ubx_rxmsvsi_SV_packet_top[j]) < ubx_parse_rxm_svsi_SV_ura(&ubx_rxmsvsi_SV_packet))
-						{
-							ubx_rxmsvsi_SV_packet_top[j] = ubx_rxmsvsi_SV_packet;
-							break;
-						}
-					}
-				}
+				if (ubx_parse_rxm_svsi_SV_ephVal(&ubx_rxmsvsi_SV_packet))
+					msg_sins_rxmsvsi.satellites_with_ephs++;
+				if (ubx_parse_rxm_svsi_SV_almVal(&ubx_rxmsvsi_SV_packet))
+					msg_sins_rxmsvsi.satellites_with_alms++;
+				if (ubx_parse_rxm_svsi_SV_ephVal(&ubx_rxmsvsi_SV_packet) && ubx_parse_rxm_svsi_SV_almVal(&ubx_rxmsvsi_SV_packet))
+					msg_sins_rxmsvsi.satellites_with_ephs_and_alms++;
+				if (ubx_parse_rxm_svsi_SV_healthy(&ubx_rxmsvsi_SV_packet))
+					msg_sins_rxmsvsi.sattelites_healthy++;
 			}
-			msg_sins_rxmsvsi.svid_0   = ubx_rxmsvsi_SV_packet_top[0].svid;
-			msg_sins_rxmsvsi.svflag_0 = ubx_rxmsvsi_SV_packet_top[0].svFlag;
-			msg_sins_rxmsvsi.age_0    = ubx_rxmsvsi_SV_packet_top[0].age;
-			msg_sins_rxmsvsi.svid_1   = ubx_rxmsvsi_SV_packet_top[1].svid;
-			msg_sins_rxmsvsi.svflag_1 = ubx_rxmsvsi_SV_packet_top[1].svFlag;
-			msg_sins_rxmsvsi.age_1    = ubx_rxmsvsi_SV_packet_top[1].age;
-			msg_sins_rxmsvsi.svid_2   = ubx_rxmsvsi_SV_packet_top[2].svid;
-			msg_sins_rxmsvsi.svflag_2 = ubx_rxmsvsi_SV_packet_top[2].svFlag;
-			msg_sins_rxmsvsi.age_2    = ubx_rxmsvsi_SV_packet_top[2].age;
-			msg_sins_rxmsvsi.svid_3   = ubx_rxmsvsi_SV_packet_top[3].svid;
-			msg_sins_rxmsvsi.svflag_3 = ubx_rxmsvsi_SV_packet_top[3].svFlag;
-			msg_sins_rxmsvsi.age_3    = ubx_rxmsvsi_SV_packet_top[3].age;
+			msg_sins_rxmsvsi.satellites_total = ubx_parse_rxm_svsi_SV_num(&packet->packet.rxmsvsi);
 
 			mavlink_message_t msg;
 			mavlink_msg_sins_rxmsvsi_encode(SYSTEM_ID, COMPONENT_ID, &msg, &msg_sins_rxmsvsi);
