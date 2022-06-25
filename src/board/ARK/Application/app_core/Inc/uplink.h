@@ -9,9 +9,12 @@
 #define INC_UPLINK_H_
 
 #include "mavlink_help2.h"
+#include "mavlink.h"
 
 //! Функция отпавляет пакет в БКУ
 /*! Возвращаемое значение аналогично тому, что возвращает its_i2c_link_write */
 int uplink_packet(const mavlink_message_t * msg);
+
+int uplink_packet2(uint8_t* data, size_t size);
 
 #endif /* INC_UPLINK_H_ */

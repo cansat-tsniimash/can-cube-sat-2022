@@ -48,6 +48,7 @@ void its_collect_ark_stats(mavlink_ark_stats_t * msg);
 
 void its_sync_time(its_time_t *from_bcs);
 
+void its_sync_time_exti_cb();
 
 /*
  * Delay in microseconds (not milliseconds)

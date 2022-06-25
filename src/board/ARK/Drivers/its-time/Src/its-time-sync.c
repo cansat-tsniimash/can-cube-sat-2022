@@ -7,15 +7,9 @@
 static its_time_t last_exti;
 static volatile int is_intertupted = 0;
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    switch (GPIO_Pin) {
-    case TIME_Pin: {
-        is_intertupted = 1;
-        its_gettimeofday(&last_exti);
-    }
-    default:
-        break;
-    }
+void its_sync_time_exti_cb() {
+    is_intertupted = 1;
+    its_gettimeofday(&last_exti);
 }
 
 
