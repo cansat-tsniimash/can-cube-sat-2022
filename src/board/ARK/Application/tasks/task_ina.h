@@ -14,7 +14,7 @@
 #ifndef INC_TASK_INA_H_
 #define INC_TASK_INA_H_
 
-#define TINA_READ_PERIOD 0
+#define TINA_READ_PERIOD 100
 #define TINA_CALLBACK_COUNT 3
 #define INA_TIMEOUT 100
 
@@ -36,13 +36,7 @@ PB11     ------> I2C2_SDA
 
 
 
-#if defined CUBE_1 && !defined CUBE_2
-#   define TINA_COUNT 2
-#elif defined CUBE_2 && !defined CUBE_1
-#   define TINA_COUNT 0
-#else
-#   error "invalid cube definition"
-#endif
+#define TINA_COUNT 2
 
 typedef struct {
     float current;

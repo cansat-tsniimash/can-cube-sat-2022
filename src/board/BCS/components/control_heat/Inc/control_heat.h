@@ -24,4 +24,8 @@ void control_heat_set_consumption(int id, int current);
 
 void control_heat_set_max_consumption(int current);
 
+void control_heat_suspend();
+
+void control_heat_resume();
+
 #endif /* COMPONENTS_CONTROL_HEAT_INC_CONTROL_HEAT_H_ */

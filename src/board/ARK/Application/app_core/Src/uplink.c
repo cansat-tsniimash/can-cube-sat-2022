@@ -31,3 +31,14 @@ int uplink_packet(const mavlink_message_t * msg)
 
     return rc;
 }
+
+int uplink_packet2(uint8_t* data, size_t size) {
+    int rc = its_i2c_link_write(data, size);
+    if (rc > 0)
+    {
+        // Отправка пакета удалась! сбрасываем вотчдог
+        HAL_IWDG_Refresh(&hiwdg);
+    }
+
+    return rc;
+}

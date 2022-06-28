@@ -71,8 +71,8 @@ void task_ina_update(void *arg) {
              ina219_init_default(&hina[0], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_GND << 1, INA_TIMEOUT);
              ina219_init_default(&hina[1], INA_BUS_HANDLE, INA219_I2CADDR_A1_GND_A0_VSP << 1, INA_TIMEOUT);
          }
+     	 //printf("ina %d: I: %d.%03d V: %d.%03d\n", i, (int)ina_value[i].current, (int)(ina_value[i].current * 1000), (int)ina_value[i].voltage, (int)(ina_value[i].voltage * 1000));
     }
-
     for (int i = 0; i < ina_callback_count; i++) {
         (*ina_callback_arr[i])();
     }

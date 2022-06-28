@@ -14,15 +14,14 @@
 // Тут генерируется множество вот таких сообщений
 // warning: taking address of packed member of 'struct __mavlink_vision_speed_estimate_t' may result in an unaligned pointer value [-Waddress-of-packed-member]
 // Мы доверяем мавлинку в том, что он не сгенерит ничего невыровненого, поэтому давим эти варнинги
-#include "mavlink.h"
 #include "battery.h"
-#include "mavlink_system_id.h"
 #include "task.h"
 #include "task_ds.h"
 #include "task_ina.h"
 #include "task_send.h"
 #include "task_recv.h"
 #include "task_battery_control.h"
+#include "roze.h"
 #include "adc.h"
 
 
@@ -37,13 +36,12 @@ enum TEMP_STATE {
 } ;
 
 
-void time_recv_callback(const mavlink_message_t *msg);
+void time_recv_callback(const timestamp_data_t *msg);
 
 void task_main_init(void *arg) {
     printf("INFO: Starting task scheduling\n");
     its_i2c_link_start();
     its_time_init();
-    trecv_add_callbac(time_recv_callback);
 
     task_t t = {0};
 
@@ -66,6 +64,13 @@ void task_main_init(void *arg) {
     t.update = task_recv_update;
     strcpy(t.name, "I2C recv");
     task_create(t, 0);
+
+
+    t.init = task_roze_init;
+    t.update = task_roze_update;
+    strcpy(t.name, "ROZE");
+    task_create(t, 0);
+
 
 //    t.init = task_battery_control_init;
 //    t.update = task_battery_control_update;
@@ -109,23 +114,3 @@ int tmain(void) {
 }
 
 
-void time_recv_callback(const mavlink_message_t *msg) {
-
-    uint8_t time_base = 0;
-    its_get_time_base(&time_base);
-    if (msg->msgid != MAVLINK_MSG_ID_TIMESTAMP) {
-        return;
-    }
-    mavlink_timestamp_t mts;
-    mavlink_msg_timestamp_decode(msg, &mts);
-    if (time_base > mts.time_base) {
-        return;
-        its_count__time_sync_attempts();
-    }
-
-    its_set_time_base(mts.time_base);
-    its_time_t t;
-    t.sec = mts.time_s;
-    t.msec = mts.time_us / 1000;
-    its_sync_time(&t);
-}

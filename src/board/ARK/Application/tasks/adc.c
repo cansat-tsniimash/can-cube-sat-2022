@@ -8,7 +8,6 @@
 
 #include "adc.h"
 #include <stdio.h>
-#include "mavlink_help2.h"
 #include "uplink.h"
 #include "its-time.h"
 
@@ -64,17 +63,19 @@ void adc_task_update(void *arg) {
 	float temp_c = (TEMP_SENSOR_V25 - vtemp) / TEMP_SENSOR_SLOPE + 25;
 	printf("ADC: vdda: %d, temp_uc %d\n", (int)(vdda), (int)(temp_c*1000));
 
-	static mavlink_message_t msg;
 	its_time_t here = {0};
 	its_gettimeofday(&here);
 
-	mavlink_own_temp_t mot = {0};
-	mot.time_s = here.sec;
-    mot.time_us = here.msec * 1000;
-    mot.time_steady = HAL_GetTick();
-	mot.vdda = vdda/1000;
-	mot.deg = temp_c;
+	own_temp_t ot = {0};
 
-	mavlink_msg_own_temp_encode(mavlink_system, COMP_ANY_0, &msg, &mot);
-	uplink_packet(&msg);
+	ot.time_s = here.sec;
+    ot.time_us = here.msec * 1000;
+    ot.time_steady = HAL_GetTick();
+	ot.vdda = vdda/1000;
+	ot.deg = temp_c;
+
+	uint8_t buf[MAVLINK_HELP_DATA_SIZE];
+
+	mavlink_help_own_temp_serialize(buf, sizeof(buf), &ot);
+	uplink_packet2(buf, sizeof(buf));
 }

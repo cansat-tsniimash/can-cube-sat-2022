@@ -24,14 +24,15 @@
 
 #include <math.h>
 
+
 #define HEAT_COUNT 6
-static const int heat_module[] = {
-		MSP_BCU_HEAT,
-		MSP_BSK1_HEAT,
-		MSP_BSK2_HEAT,
-		MSP_BSK3_HEAT,
-		MSP_BSK4_HEAT,
-		MSP_BSK5_HEAT,
+static const int heat_pins[] = {
+		ITS_PIN_SR_BCU_HEAT,
+		ITS_PIN_SR_BSK1_HEAT,
+		ITS_PIN_SR_BSK2_HEAT,
+		ITS_PIN_SR_BSK3_HEAT,
+		ITS_PIN_SR_BSK4_HEAT,
+		ITS_PIN_SR_BSK5_HEAT,
 };
 
 static void _task_recv(void *arg);
@@ -39,6 +40,7 @@ static void _task_recv(void *arg);
 static void _task_update(void *arg) ;
 
 static int _shift;
+static int _need_to_update = 0;
 
 typedef enum {
 	OFF,
@@ -58,7 +60,30 @@ static TaskHandle_t t_recv;
 static TaskHandle_t t_upda;
 static log_data_t log_data;
 
+void control_heat_suspend() {
+	ESP_LOGE("CONTROL_HEAT", "Suspend");
+	vTaskSuspend(t_upda);
+	shift_reg_take(_hsr, portMAX_DELAY);
+	//Запишем на сдвиговые регистры новое состояние
+	for (int sensor = 0; sensor < HEAT_COUNT; sensor++) {
+		shift_reg_set_level_pin(_hsr, heat_pins[sensor], 0);
+	}
+	esp_err_t rc = shift_reg_load(_hsr);
+	shift_reg_return(_hsr);
 
+}
+
+void control_heat_resume() {
+	ESP_LOGE("CONTROL_HEAT", "Resume");
+	shift_reg_take(_hsr, portMAX_DELAY);
+	//Запишем на сдвиговые регистры новое состояние
+	for (int sensor = 0; sensor < HEAT_COUNT; sensor++) {
+		shift_reg_set_level_pin(_hsr, heat_pins[sensor], state[sensor]);
+	}
+	esp_err_t rc = shift_reg_load(_hsr);
+	shift_reg_return(_hsr);
+	vTaskResume(t_upda);
+}
 
 int control_heat_init(shift_reg_handler_t *hsr, int shift, int task_on) {
 	for (int i = 0; i < HEAT_COUNT; i++) {
@@ -66,7 +91,6 @@ int control_heat_init(shift_reg_handler_t *hsr, int shift, int task_on) {
 	}
 	memset(&log_data, 0, sizeof(log_data));
 	_hsr = hsr;
-	_shift = shift;
 
 	if (task_on) {
 		if (xTaskCreatePinnedToCore(_task_update, "Control heat update", configMINIMAL_STACK_SIZE + 1500, 0, 4, &t_upda, tskNO_AFFINITY) != pdTRUE ||
@@ -95,9 +119,11 @@ void control_heat_bsk_enable(int pin, int is_on) {
 }
 
 void control_heat_set_consumption(int id, int current) {
+	_need_to_update = 1;
 	consumption[id] = current;
 }
 void control_heat_set_max_consumption(int current) {
+	_need_to_update = 1;
 	max_consumption = current;
 }
 
@@ -154,12 +180,18 @@ static void _task_recv(void *arg) {
 #define __BSK(i) __CAT(ITS_BSK, i)
 
 static void _task_update(void *arg) {
-	int64_t now = esp_timer_get_time();
 	//Массив для сортировки не сортируя
 	int arr[HEAT_COUNT] = {0};
 
-
+	int64_t last = 0;
 	while (1) {
+		int64_t now = esp_timer_get_time();
+		vTaskDelay(1000 / portTICK_RATE_MS);
+		if (now - last <  CONTROL_HEAT_UPDATE_PERIOD / portTICK_PERIOD_MS || _need_to_update) {
+			continue;
+		}
+		last = now;
+		_need_to_update = 0;
 		for (int i = 0; i < HEAT_COUNT; i++) {
 			arr[i] = i;
 		}
@@ -190,12 +222,15 @@ static void _task_update(void *arg) {
 				new[arr[i]] = OFF;
 			}
 		}
+		shift_reg_take(_hsr, portMAX_DELAY);
 		//Запишем на сдвиговые регистры новое состояние
 		for (int sensor = 0; sensor < HEAT_COUNT; sensor++) {
-			msp_turn_on(heat_module[sensor], new[sensor] == ON);
+			shift_reg_set_level_pin(_hsr, heat_pins[sensor], new[sensor]);
 		}
-		BaseType_t rc = msp_rethink(portMAX_DELAY);
-		if (rc == pdTRUE) {
+		esp_err_t rc = shift_reg_load(_hsr);
+		shift_reg_return(_hsr);
+
+		if (rc == ESP_OK) {
 			for (int i = 0; i < HEAT_COUNT; i++) {
 				if (new[i] == ON && state[i] == OFF) {
 					ESP_LOGD("CONTROL_HEAT", "now ON %d %f", i, temperature[i]);
@@ -210,10 +245,8 @@ static void _task_update(void *arg) {
 			log_data.last_error = LOG_ERROR_LL_API;
 			log_data.error_count++;
 		}
-		msp_rethink(portMAX_DELAY);
 		//Соберем немного логов
 		log_collector_add(LOG_COMP_ID_SHIFT_REG, &log_data);
-		vTaskDelay(CONTROL_HEAT_UPDATE_PERIOD / portTICK_PERIOD_MS);
 	}
 
 }

@@ -16,6 +16,9 @@
 #include "pinout_cfg.h"
 #include "log_collector.h"
 
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#include "esp_log.h"
+
 #define RADIO_SEND_DELAY 50
 #define RADIO_SLEEP_AWAKE_LEGNTH 300 //ms
 #define RADIO_SLEEP_SLEEP_LENGTH 4000 //ms
@@ -292,7 +295,7 @@ static void _try_to_send_or_recv(radio_t *server, radio_private_state_t *state, 
 		}
 		if (state->dir_state == RS_RX) {
 			ESP_LOGV("radio", "new rx");
-			rc = sx126x_drv_mode_rx(&server->dev, RADIO_RX_PERIOD / 1000);
+			rc = sx126x_drv_mode_rx(&server->dev, RADIO_RX_PERIOD);
 			if (0 != rc) {
 				state->error_count_rx++;
 				log_error("unable to switch radio to rx mode: %d. Dropping frame", rc);

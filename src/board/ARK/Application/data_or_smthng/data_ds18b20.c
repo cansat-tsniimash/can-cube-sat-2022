@@ -3,7 +3,7 @@
 #include "main.h"
 
 #include "ds18b20.h"
-#include "mavlink/its/mavlink.h"
+#include "mavlink.h"
 #include "mavlink_system_id.h"
 #include "Time.h"
 #include "i2c.h"

@@ -8,6 +8,7 @@
 #include "main.h"
 
 #include "mavlink_help2.h"
+#include "mavlink.h"
 #include "its-time.h"
 #include "uplink.h"
 #include "task_ds.h"
@@ -92,7 +93,7 @@ void eupdate() {
             mest.current = current[ina_index];
             mest.voltage = voltage[ina_index];
 
-            mavlink_msg_electrical_state_encode(mavlink_system, ina_index, &msg, &mest);
+            mavlink_msg_electrical_state_encode(CUBE_1_PCU, ina_index, &msg, &mest);
         }
         if (uplink_packet(&msg) > 0) {
             ina_index++;
@@ -147,7 +148,7 @@ void tupdate() {
             mtst.time_steady = HAL_GetTick();
             mtst.temperature = temp[ds_index];
 
-            mavlink_msg_thermal_state_encode(mavlink_system, ds_index, &msg, &mtst);
+            mavlink_msg_thermal_state_encode(CUBE_1_PCU, ds_index, &msg, &mtst);
         }
         if (uplink_packet(&msg) > 0) {
             ds_index++;
@@ -177,7 +178,7 @@ void send_stats(void)
 	mavlink_message_t msg;
 	mavlink_ark_stats_t stats_msg;
 	its_collect_ark_stats(&stats_msg);
-	mavlink_msg_ark_stats_encode(mavlink_system, (uint8_t)0, &msg, &stats_msg);
+	mavlink_msg_ark_stats_encode(CUBE_1_PCU, (uint8_t)0, &msg, &stats_msg);
 	uplink_packet(&msg);
 
 	its_i2c_link_stats_t i2c_stats;
@@ -221,7 +222,7 @@ void send_stats(void)
 	i2c_stats_msg.tx_wrong_size_cnt = i2c_stats.tx_wrong_size_cnt;
 	i2c_stats_msg.rx_wrong_size_cnt = i2c_stats.rx_wrong_size_cnt;
 
-	mavlink_msg_i2c_link_stats_encode(mavlink_system, (uint8_t)0, &msg, &i2c_stats_msg);
+	mavlink_msg_i2c_link_stats_encode(CUBE_1_PCU, (uint8_t)0, &msg, &i2c_stats_msg);
 	uplink_packet(&msg);
 }
 
