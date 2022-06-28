@@ -19,18 +19,17 @@
 #include "log_collector.h"
 #include "shift_reg.h"
 #include "pinout_cfg.h"
-#include "msp.h"
+#include "control_heat.h"
 
-
-#define ROZE_COUNT 4
-#define CMD_COUNT 4
+#define ROZE_COUNT 8
 
 const static char *TAG = "OP2";
 
 typedef enum {
 	CS_OFF,
 	CS_GOT_MSG,
-	CS_ON,
+	CS_ON_LOW,
+	CS_ON_HIGH
 } control_state_t;
 
 typedef struct {
@@ -41,33 +40,33 @@ typedef struct {
 } op_stats_t;
 
 typedef struct {
-	int64_t start;
-	int64_t end;
-	int64_t duration;
+	uint32_t last_switch;
+	uint32_t pulse_count;
+	uint32_t period;
+	float duty;
+
 	uint32_t state;
 	uint8_t seq;
 } state_t;
 typedef struct {
 	state_t roze[ROZE_COUNT];
-	state_t cmd[CMD_COUNT];
 } op_state_t;
 
 
 extern shift_reg_handler_t hsr;
 
-const static int module_roze[] = {
-		MSP_BSK1_ROZE,
-		MSP_BSK2_ROZE,
-		MSP_BSK3_ROZE,
-		MSP_BSK4_ROZE,
+
+const static int roze_pins[] = {
+	ITS_PIN_SR_BSK1_CMD,
+	ITS_PIN_SR_BSK2_CMD,
+	ITS_PIN_SR_BSK3_CMD,
+	ITS_PIN_SR_BSK4_CMD,
+	ITS_PIN_SR_BSK1_ROZE,
+	ITS_PIN_SR_BSK2_ROZE,
+	ITS_PIN_SR_BSK3_ROZE,
+	ITS_PIN_SR_BSK4_ROZE,
 };
 
-const static int module_cmd[] = {
-		MSP_BSK1_CMD,
-		MSP_BSK2_CMD,
-		MSP_BSK3_CMD,
-		MSP_BSK4_CMD,
-};
 
 static void op_task(void *arg) {
 	op_state_t op_state = {0};
@@ -81,6 +80,7 @@ static void op_task(void *arg) {
 	its_rt_register(MAVLINK_MSG_ID_ROZE_ACTIVATE_COMMAND, tid);
 	its_rt_register(MAVLINK_MSG_ID_CMD_ACTIVATE_COMMAND, tid);
 	its_rt_register(MAVLINK_MSG_ID_IDLE_COMMAND, tid);
+	int heat_state = 1;
 	while (1) {
 		vTaskDelay(1);
 
@@ -91,21 +91,39 @@ static void op_task(void *arg) {
 			if (msg.msgid == MAVLINK_MSG_ID_ROZE_ACTIVATE_COMMAND) {
 				mavlink_roze_activate_command_t mrac = {0};
 				mavlink_msg_roze_activate_command_decode(&msg, &mrac);
-				op_state.roze[mrac.area_id - 1].duration = mrac.active_time * 1000000;
-				op_state.roze[mrac.area_id - 1].state = CS_GOT_MSG;
-				op_state.roze[mrac.area_id - 1].seq = msg.seq;
+				op_state.roze[mrac.area_id - 1 + 4].state = CS_GOT_MSG;
+				op_state.roze[mrac.area_id - 1 + 4].seq = msg.seq;
+				op_state.roze[mrac.area_id - 1 + 4].pulse_count = mrac.pulse_count;
+				op_state.roze[mrac.area_id - 1 + 4].duty = mrac.pulse_duty_cycle / (float)(0xFFFF);
+				op_state.roze[mrac.area_id - 1 + 4].period = mrac.pulse_duration;
 
-				ESP_LOGV(TAG, "%d:%06d: roze for BSK%d for %d ms %d", (int)mrac.time_s, mrac.time_us, mrac.area_id, mrac.active_time, msg.seq);
+				ESP_LOGV(TAG, "%d:%06d: roze for BSK%d seq: %d pulse count: %d duty: %d period: %d", 
+				         (int)mrac.time_s, 
+						 mrac.time_us, 
+						 mrac.area_id, 
+						 msg.seq, 
+						 mrac.pulse_count, 
+						 mrac.pulse_duty_cycle,
+						 mrac.pulse_duration);
 				stats.count_recieved_cmds++;
 			}
 			if (msg.msgid == MAVLINK_MSG_ID_CMD_ACTIVATE_COMMAND) {
 				mavlink_cmd_activate_command_t mcac = {0};
 				mavlink_msg_cmd_activate_command_decode(&msg, &mcac);
-				op_state.cmd[mcac.area_id - 1].duration = mcac.active_time * 1000000;
-				op_state.cmd[mcac.area_id - 1].state = CS_GOT_MSG;
-				op_state.cmd[mcac.area_id - 1].seq = msg.seq;
+				op_state.roze[mcac.area_id - 1].state = CS_GOT_MSG;
+				op_state.roze[mcac.area_id - 1].seq = msg.seq;
+				op_state.roze[mcac.area_id - 1].pulse_count = mcac.pulse_count;
+				op_state.roze[mcac.area_id - 1].duty = mcac.pulse_duty_cycle / (float)(0xFFFF);
+				op_state.roze[mcac.area_id - 1].period = mcac.pulse_duration;
 
-				ESP_LOGV(TAG, "%d:%06d: cmd for BSK%d for %d ms %d", (int)mcac.time_s, mcac.time_us, mcac.area_id, mcac.active_time, msg.seq);
+				ESP_LOGV(TAG, "%d:%06d: cmd for BSK%d seq: %d pulse count: %d duty: %d period: %d", 
+				         (int)mcac.time_s, 
+						 mcac.time_us, 
+						 mcac.area_id, 
+						 msg.seq, 
+						 mcac.pulse_count, 
+						 mcac.pulse_duty_cycle,
+						 mcac.pulse_duration);
 				stats.count_recieved_cmds++;
 			}
 			if (msg.msgid == MAVLINK_MSG_ID_IDLE_COMMAND) {
@@ -121,50 +139,77 @@ static void op_task(void *arg) {
 		}
 
 		//-------------------------------------------------------------------------------
-		// Управление всем
+		// Управление нагревателем
 		//-------------------------------------------------------------------------------
-		int64_t now = esp_timer_get_time();
-		int is_msp_changed = 0;
+		int heat_state_new = 1;
 		for (int i = 0; i < ROZE_COUNT; i++) {
-			if (op_state.roze[i].state == CS_GOT_MSG) {
-				op_state.roze[i].start = now;
-				op_state.roze[i].end = now + op_state.roze[i].duration;
-				op_state.roze[i].state = CS_ON;
-				msp_turn_on(module_roze[i], 1);
-				is_msp_changed = 1;
-			}
-			if (op_state.roze[i].state == CS_ON) {
-				if (op_state.roze[i].end <= now) {
-					msp_turn_on(module_roze[i], 0);
-					op_state.roze[i].state = CS_OFF;
-					stats.count_executed_cmds++;
-					stats.last_executed_cmd_seq = op_state.roze[i].seq;
-					ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
-					is_msp_changed = 1;
-				}
+			if (op_state.roze[i].state != CS_OFF) {
+				heat_state_new = 0;
+				break;
 			}
 		}
-		for (int i = 0; i < CMD_COUNT; i++) {
-			if (op_state.cmd[i].state == CS_GOT_MSG) {
-				op_state.cmd[i].start = now;
-				op_state.cmd[i].end = now + op_state.cmd[i].duration;
-				op_state.cmd[i].state = CS_ON;
-				msp_turn_on(module_cmd[i], 1);
-				is_msp_changed = 1;
+		if (heat_state_new == 1 && heat_state == 0) {
+			control_heat_resume();
+		} else if (heat_state_new == 0 && heat_state == 1) {
+			control_heat_suspend();
+		}
+		heat_state = heat_state_new;
+
+		//-------------------------------------------------------------------------------
+		// Управление розе
+		//-------------------------------------------------------------------------------
+		int64_t now = esp_timer_get_time() / 1000;
+		int is_state_changed = 0;
+		for (int i = 0; i < ROZE_COUNT; i++) {
+			state_t* cur = &op_state.roze[i];
+			uint32_t low_period = cur->period * (1 - cur->duty);
+			uint32_t high_period = cur->period * cur->duty;
+			if (cur->state == CS_GOT_MSG) {
+				ESP_LOGI(TAG, "roze %d turn on", i);
+				ESP_LOGI(TAG, "roze %d set %d", i, 1);
+				cur->last_switch = now;
+				cur->state = CS_ON_HIGH;
+				is_state_changed = 1;
 			}
-			if (op_state.cmd[i].state == CS_ON) {
-				if (op_state.cmd[i].end <= now) {
-					msp_turn_on(module_cmd[i], 0);
-					op_state.cmd[i].state = CS_OFF;
-					stats.count_executed_cmds++;
-					stats.last_executed_cmd_seq = op_state.cmd[i].seq;
-					ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
-					is_msp_changed = 1;
-				}
+
+			if (cur->state == CS_ON_HIGH && cur->last_switch + high_period <= now) {
+				ESP_LOGI(TAG, "roze %d set %d", i, 0);
+				cur->pulse_count--;
+				cur->state = CS_ON_LOW;
+				cur->last_switch = now;
+				is_state_changed = 1;
+			}
+
+			if (cur->state == CS_ON_LOW && cur->last_switch + low_period <= now) {
+				ESP_LOGI(TAG, "roze %d set %d",  i, 1);
+				cur->state = CS_ON_HIGH;
+				cur->last_switch = now;
+				is_state_changed = 1;
+			}
+
+			if ((cur->state == CS_ON_HIGH || cur->state == CS_ON_LOW) && cur->pulse_count == 0) {
+				ESP_LOGI(TAG, "roze %d set %d", i, 0);
+				ESP_LOGI(TAG, "roze %d turn off", i);
+				cur->state = CS_OFF;
+				stats.count_executed_cmds++;
+				stats.last_executed_cmd_seq = cur->seq;
+				ESP_LOGI(TAG, "set %d", stats.last_executed_cmd_seq);
+				is_state_changed = 1;
 			}
 		}
-		if (is_msp_changed) {
-			msp_rethink(portMAX_DELAY);
+
+		if (is_state_changed) {
+			shift_reg_take(&hsr, portMAX_DELAY);
+			//Запишем на сдвиговые регистры новое состояние
+			for (int i = 0; i < ROZE_COUNT; i++) {
+				if (op_state.roze[i].state == CS_ON_HIGH) {
+					shift_reg_set_level_pin(&hsr, roze_pins[i], 1);					
+				} else {
+					shift_reg_set_level_pin(&hsr, roze_pins[i], 0);
+				}
+			}
+			esp_err_t rc = shift_reg_load(&hsr);
+			shift_reg_return(&hsr);
 		}
 
 

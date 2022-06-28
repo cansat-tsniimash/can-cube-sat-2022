@@ -2,6 +2,8 @@
 #include "../Inc_private/radio_help.h"
 
 
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#include "esp_log.h"
 /*
  * Хэш-функция для получения индекса в массиве arr_id для заданного
  * номера сообщения.
