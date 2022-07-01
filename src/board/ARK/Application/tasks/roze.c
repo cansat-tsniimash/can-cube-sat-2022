@@ -6,7 +6,8 @@
  */
 
 #include "roze.h"
-
+#include "uplink.h"
+#include "its-time.h"
 #define PERIOD 100
 
 void task_roze_init(void* arg) {
@@ -35,17 +36,19 @@ void task_roze_update(void* arg) {
 	its_gettimeofday(&here);
 
 
-	own_temp_t ot = {0};
+	sp_deployment_state_t sds = {0};
 
-	ot.time_s = here.sec;
-    ot.time_us = here.msec * 1000;
-    ot.time_steady = HAL_GetTick();
-	ot.vdda = vdda/1000;
-	ot.deg = temp_c;
+	sds.time_s = here.sec;
+    sds.time_us = here.msec * 1000;
+    sds.time_steady = HAL_GetTick();
+    for (int i = 0; i < 4; i++) {
+    	sds.is_opened[i] = roze[i];
+    }
 
 	uint8_t buf[MAVLINK_HELP_DATA_SIZE];
 
-	mavlink_help_own_temp_serialize(buf, sizeof(buf), &ot);
-	uplink_packet2(buf, sizeof(buf));
+
+	uint16_t count = mavlink_help_sp_deployment_state_serialize(buf, sizeof(buf), &sds);
+	uplink_packet2(buf, count);
 
 }

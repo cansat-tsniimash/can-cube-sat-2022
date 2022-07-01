@@ -76,6 +76,6 @@ void adc_task_update(void *arg) {
 
 	uint8_t buf[MAVLINK_HELP_DATA_SIZE];
 
-	mavlink_help_own_temp_serialize(buf, sizeof(buf), &ot);
-	uplink_packet2(buf, sizeof(buf));
+	uint16_t count = mavlink_help_own_temp_serialize(buf, sizeof(buf), &ot);
+	uplink_packet2(buf, count);
 }

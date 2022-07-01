@@ -68,10 +68,9 @@ void mavlink_help_timestamp_parse(const uint8_t* data, size_t size, timestamp_da
     ts->time_base = mts.time_base;
 }
 
-void mavlink_help_own_temp_serialize(uint8_t* data, size_t size, const own_temp_t* ot) {
+uint16_t mavlink_help_own_temp_serialize(uint8_t* data, size_t size, const own_temp_t* ot) {
 
     mavlink_message_t msg = {0};
-    _parse_packet(data, size, &msg);
     mavlink_own_temp_t mot = {0};
     mot.time_s = ot->time_s;
     mot.time_us = ot->time_us;
@@ -82,5 +81,21 @@ void mavlink_help_own_temp_serialize(uint8_t* data, size_t size, const own_temp_
 
 
     mavlink_msg_own_temp_encode(mavlink_system, 0, &msg, &mot);
-    mavlink_msg_to_send_buffer(data, &msg);
+    return mavlink_msg_to_send_buffer(data, &msg);
+}
+
+uint16_t mavlink_help_sp_deployment_state_serialize(uint8_t* data, size_t size, const sp_deployment_state_t* sds) {
+
+    mavlink_message_t msg = {0};
+    mavlink_ark_sp_deployment_state_t masds = {0};
+    masds.time_s = sds->time_s;
+    masds.time_us = sds->time_us;
+    masds.time_steady = sds->time_steady;
+
+    for (int i = 0; i < 4; i++) {
+    	masds.is_open[i] = sds->is_opened[i];
+    }
+
+    mavlink_msg_ark_sp_deployment_state_encode(mavlink_system, 0, &msg, &masds);
+    return mavlink_msg_to_send_buffer(data, &msg);
 }
