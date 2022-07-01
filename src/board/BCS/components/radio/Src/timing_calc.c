@@ -1,7 +1,7 @@
 #include "../Inc_private/timing_calc.h"
 
 
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
 
 #define RADIO_TIMING_PANIC 1

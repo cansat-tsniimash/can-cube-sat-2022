@@ -30,7 +30,7 @@
 #include "imi.h"
 #include "pinout_cfg.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_NONE
+#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
 #include "esp_log.h"
 
 static const char *TAG = "imi";
