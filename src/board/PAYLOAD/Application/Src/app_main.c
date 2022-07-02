@@ -26,7 +26,7 @@
 
 #include "commissar.h"
 
-#define ITS_PLD_COMPRESSOR_TESTS
+//#define ITS_PLD_COMPRESSOR_TESTS
 
 //! БМЕ принципиально не показывает давление ниже 30ы 0000
 //! Поэтому с этого момента мы его показания для управления компрессором не используем
