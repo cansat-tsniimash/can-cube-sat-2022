@@ -2,7 +2,7 @@
 #include "../Inc_private/radio_help.h"
 
 
-#define LOG_LOCAL_LEVEL ESP_LOG_ERROR
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 /*
  * Хэш-функция для получения индекса в массиве arr_id для заданного
@@ -275,5 +275,6 @@ void rbuf_reset(radio_t* server, radio_private_state_t* state) {
 	log_trace("radio reset");
 	timing_calc_init(server, &state->timings);
 	server->radio_ring_buffer.put = 0;
+	server->radio_ring_buffer.get = 0;
 
 }

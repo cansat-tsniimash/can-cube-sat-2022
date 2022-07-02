@@ -33,8 +33,6 @@
 
 #define RADIO_PACKET_SIZE ITS_RADIO_PACKET_SIZE
 #define RADIO_RX_TIMEDOUT_LIMIT 5
-#define RADIO_TX_TIMEOUT_MS (5000)
-#define RADIO_RX_TIMEOUT_MS (3000)
 #define RADIO_RSSI_PERIOD_MS (500)
 #define SERVER_TX_STATE_PERIOD_MS (500)
 
@@ -42,14 +40,14 @@
 
 #define RADIO_TX_PERIOD (10000)
 //#define RADIO_RX_PERIOD (2000)
-#define RADIO_RX_PERIOD (5000)
+#define RADIO_RX_PERIOD (8000)
 #define RADIO_START_ANYWAY (10000)
 /*
  * Это поле не меняется автоматически!!! См. _radio_init
  */
 #warning "Это поле меняется вручную в зависисимости от периода отправки сообщений"
 //#define RADIO_TX_COUNT 7
-#define RADIO_TX_COUNT 400
+#define RADIO_TX_COUNT 50
 
 typedef uint64_t msg_cookie_t;
 #define MSG_COOKIE_T_PLSHOLDER PRIu64
