@@ -38,9 +38,9 @@
 
 #define _DIV_TRUNC(a, b) (((a) + (b) - 1) / (b))
 
-#define RADIO_TX_PERIOD (10000)
+#define RADIO_TX_PERIOD (5000)
 //#define RADIO_RX_PERIOD (2000)
-#define RADIO_RX_PERIOD (8000)
+#define RADIO_RX_PERIOD (3000)
 #define RADIO_START_ANYWAY (10000)
 /*
  * Это поле не меняется автоматически!!! См. _radio_init

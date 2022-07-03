@@ -229,7 +229,7 @@ static void _process_event(radio_t *server, sx126x_drv_evt_t event, radio_privat
 
 static void _update_state(radio_private_state_t *state, radio_t *server, int64_t now) {
 
-	if (state->dir_state == RS_RX && RADIO_RX_PERIOD < now - state->period_start && state->packet_done) {
+	if (state->dir_state == RS_RX && RADIO_RX_PERIOD * 0.95 < now - state->period_start && state->packet_done) {
 		log_info("START TX0");
 		state->dir_state = RS_TX;
 		state->period_start = now;
