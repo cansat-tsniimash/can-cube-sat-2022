@@ -296,7 +296,7 @@ static void sensors_ina_task(void *arg) {
 
 			mes[i].time_s = tp.tv_sec;
 			mes[i].time_us = tp.tv_usec;
-			mes[i].time_steady = (uint32_t) now / 1000;
+			mes[i].time_steady = now / 1000;
 			vTaskDelay(100 / portTICK_PERIOD_MS);
 		}
 		for (int i = 0; i < INA_MAX; i++) {
