@@ -17,11 +17,12 @@ sc_start_time = 1656909365 # Время запуска
 
 df = pd.read_csv(source)
 df["lost_frames"] = df["frame_no"].diff() - 1
+df["bad_frames"] = df["frame_no"].diff() - 1
 df["mins_from_start"] = (df['time_s'] - sc_start_time + df["time_us"] / 1000_000) / 60
 print(df)
 df.to_csv(dest, sep=",")
 
-bin_step = 5
+bin_step = 2
 bins = list(range(0, 120, bin_step))
 groups = df.groupby(pd.cut(df["mins_from_start"], bins=bins, labels=bins[1:]), as_index=False)
 stats = groups.agg({"mins_from_start": ["min"], "lost_frames": ["sum"], "time_s": ["count"]})
