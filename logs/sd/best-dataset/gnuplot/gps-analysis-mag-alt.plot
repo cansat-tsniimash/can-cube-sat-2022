@@ -3,8 +3,8 @@ load "__common.plot-include"
 set datafile separator comma
 
 set xzeroaxis
-set xlabel "Высота (м)" #font ",18"
-#set xtics 10 nomirror #font ",18"
+set xlabel "Высота (м)"
+#set xtics 10 nomirror
 #set xrange[-10:120]
 set mxtics
 

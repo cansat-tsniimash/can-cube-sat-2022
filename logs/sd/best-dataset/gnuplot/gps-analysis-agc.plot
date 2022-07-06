@@ -3,15 +3,15 @@ load "__common.plot-include"
 set datafile separator comma
 
 set xzeroaxis
-set xlabel "Время от старта (минуты)" #font ",18"
-set xtics 10 nomirror #font ",18"
+set xlabel "Время от старта (минуты)"
+set xtics 10 nomirror
 set xrange[-10:120]
 set mxtics
 
 set yzeroaxis
-set ylabel "Индикатор AGC GPS" #font ",18"
-set ytics 1000 nomirror #font ",18"
-#set yrange [0:200]
+set ylabel "Индикатор AGC GPS"
+set ytics 1000 nomirror
+set yrange [3000:5500]
 set mytics
 
 unset key

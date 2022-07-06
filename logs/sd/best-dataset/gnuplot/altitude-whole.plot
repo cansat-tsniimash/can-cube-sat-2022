@@ -43,4 +43,4 @@ plot \
 		with lines ls 3 \
 		axis x1y1 \
 		title "Барометрическая высота" \
-
+	,\
