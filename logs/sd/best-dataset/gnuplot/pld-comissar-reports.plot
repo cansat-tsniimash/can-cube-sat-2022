@@ -16,9 +16,7 @@ set mytics
 
 set grid xtics ytics
 
-#set style line 1 lt rgb "red" lw 1
-
-set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+set arrow from 78.3373, graph 0 to 78.3373, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
 
 set key left width -7
 
@@ -50,6 +48,7 @@ plot \
 	'../analysis-scripts/com-a+COMMISSAR_REPORT-13-4.csv' \
 		using 'mins_from_launch':'rela_delta_bads' \
 		with lines ls 5 \
+		lc rgb "black" \
 		axis x1y1 \
 		title "Системная шина" \
 	,\

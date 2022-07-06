@@ -8,13 +8,11 @@ set xtics 1 nomirror #font ",18"
 set xrange[75:95]
 set mxtics
 
-set yzeroaxis
 set ylabel "Скорость счёта (импульсов в секунду)"
 set ytics 5 nomirror
 set yrange [-20:20]
 set mytics
 
-set y2zeroaxis
 set y2label "Перегрузка (м/c**2)"
 set y2tics 5 nomirror
 set y2range [0:50]
@@ -26,7 +24,7 @@ set style line 1 lt rgb "gray" lw 1
 set style line 2 lt rgb "red" lw 2
 set style line 3 lt rgb "black" lw 1
 
-set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+set arrow from 78.3373, graph 0 to 78.3373, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
 
 set key left width -13
 

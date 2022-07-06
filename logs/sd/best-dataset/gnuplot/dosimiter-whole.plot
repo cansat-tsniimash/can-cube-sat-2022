@@ -27,7 +27,7 @@ set style line 1 lt rgb "gray" lw 1
 set style line 2 lt rgb "red" lw 2
 set style line 3 lt rgb "green" lw 2
 
-set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+set arrow from 78.3373, graph 0 to 78.3373, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
 
 set key left width -13
 

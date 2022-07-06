@@ -14,18 +14,17 @@ set mx2tics 5
 
 set ylabel "Высота (м)"
 set ytics 20 nomirror
-set yrange [150:280]
+set yrange [150:260]
 unset mytics
 
 set grid xtics ytics mxtics mytics
 
 set style line 1 lt rgb "red" lw 1
 set style line 2 lt rgb "green" lw 3
-set style line 3 lt rgb "#14acba" lw 1
+set style line 3 lt rgb "blue" lw 1
 
 set arrow from 110.2515, graph 0 to 110.2515, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
 set arrow from 110.286, graph 0 to 110.286, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'red' lw 2
-#set arrow from graph 0,first 175 to graph 1,first 175 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
 
 set key right width -20
 

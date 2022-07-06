@@ -26,7 +26,7 @@ set style line 4 lt rgb "black" lw 1
 
 set arrow from 110.2515, graph 0 to 110.2515, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
 
-set key left width -1
+set key right width -1
 
 plot \
 	'../SINS_ISC-11-0.csv' \
