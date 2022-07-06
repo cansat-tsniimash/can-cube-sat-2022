@@ -1,8 +1,6 @@
-set datafile separator comma
+load "__common.plot-include"
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Дозиметр в целом
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+set datafile separator comma
 
 set xzeroaxis
 set xlabel "Время от старта (минуты)" #font ",18"
@@ -32,37 +30,37 @@ set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10)
 set key left width -20
 
 plot \
-	'its-link-a+I2C_LINK_STATS-11-0.csv' \
+	'../analysis-scripts/its-link-a+I2C_LINK_STATS-11-0.csv' \
 		using 'mins_from_launch':'rela_delta_tx_done' \
 		with lines ls 1 \
 		axis x1y1 \
 		notitle \
 	,\
-	'its-link-a+I2C_LINK_STATS-12-0.csv' \
+	'../analysis-scripts/its-link-a+I2C_LINK_STATS-12-0.csv' \
 		using 'mins_from_launch':'rela_delta_tx_done' \
 		with lines ls 2 \
 		axis x1y1 \
 		notitle \
 	,\
-	'its-link-a+I2C_LINK_STATS-13-0.csv' \
+	'../analysis-scripts/its-link-a+I2C_LINK_STATS-13-0.csv' \
 		using 'mins_from_launch':'rela_delta_tx_done' \
 		with lines ls 3 \
 		axis x1y1 \
 		notitle \
 	,\
-	'its-link-a+I2C_LINK_STATS-11-0.csv' \
+	'../analysis-scripts/its-link-a+I2C_LINK_STATS-11-0.csv' \
 		using 'mins_from_launch':'rela_delta_tx_done_smooth' \
 		with lines ls 4 \
 		axis x1y1 \
 		title "Обмен с БФНП" \
 	,\
-	'its-link-a+I2C_LINK_STATS-12-0.csv' \
+	'../analysis-scripts/its-link-a+I2C_LINK_STATS-12-0.csv' \
 		using 'mins_from_launch':'rela_delta_tx_done_smooth' \
 		with lines ls 5 \
 		axis x1y1 \
 		title "Обмен с АРК" \
 	,\
-	'its-link-a+I2C_LINK_STATS-13-0.csv' \
+	'../analysis-scripts/its-link-a+I2C_LINK_STATS-13-0.csv' \
 		using 'mins_from_launch':'rela_delta_tx_done_smooth' \
 		with lines ls 6 \
 		axis x1y1 \

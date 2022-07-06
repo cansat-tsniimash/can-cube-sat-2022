@@ -1,10 +1,7 @@
+load "__common.plot-include"
+
 set datafile separator comma
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Пик высоты
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-
-set term qt 1
 set xzeroaxis
 set xlabel "Время от старта (минуты)" #font ",18"
 set xtics 0.5 nomirror #font ",18"

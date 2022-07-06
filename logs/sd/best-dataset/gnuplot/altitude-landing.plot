@@ -1,8 +1,6 @@
-set datafile separator comma
+load "__common.plot-include"
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Посадка
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+set datafile separator comma
 
 set xzeroaxis
 set xlabel "Время от старта (минуты)" #font ",18"

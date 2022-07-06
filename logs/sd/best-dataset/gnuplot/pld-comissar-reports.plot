@@ -1,8 +1,6 @@
-set datafile separator comma
+load "__common.plot-include"
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Дозиметр в целом
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+set datafile separator comma
 
 set xzeroaxis
 set xlabel "Время от старта (минуты)" #font ",18"
@@ -25,31 +23,31 @@ set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10)
 set key left width -7
 
 plot \
-	'com-a+COMMISSAR_REPORT-13-0.csv' \
+	'../analysis-scripts/com-a+COMMISSAR_REPORT-13-0.csv' \
 		using 'mins_from_launch':'rela_delta_bads' \
 		with lines ls 1 \
 		axis x1y1 \
 		title "BME280 внутренний" \
 	,\
-	'com-a+COMMISSAR_REPORT-13-1.csv' \
+	'../analysis-scripts/com-a+COMMISSAR_REPORT-13-1.csv' \
 		using 'mins_from_launch':'rela_delta_bads' \
 		with lines ls 2 \
 		axis x1y1 \
 		title "BME280 внешний" \
 	,\
-	'com-a+COMMISSAR_REPORT-13-2.csv' \
+	'../analysis-scripts/com-a+COMMISSAR_REPORT-13-2.csv' \
 		using 'mins_from_launch':'rela_delta_bads' \
 		with lines ls 3 \
 		axis x1y1 \
 		title "MS5611 внутренний" \
 	,\
-	'com-a+COMMISSAR_REPORT-13-3.csv' \
+	'../analysis-scripts/com-a+COMMISSAR_REPORT-13-3.csv' \
 		using 'mins_from_launch':'rela_delta_bads' \
 		with lines ls 4 \
 		axis x1y1 \
 		title "MS5611 внешний" \
 	,\
-	'com-a+COMMISSAR_REPORT-13-4.csv' \
+	'../analysis-scripts/com-a+COMMISSAR_REPORT-13-4.csv' \
 		using 'mins_from_launch':'rela_delta_bads' \
 		with lines ls 5 \
 		axis x1y1 \

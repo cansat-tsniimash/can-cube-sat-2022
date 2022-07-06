@@ -1,8 +1,6 @@
-set datafile separator comma
+load "__common.plot-include"
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Индикатор подавления GPS сигнала
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+set datafile separator comma
 
 set xzeroaxis
 set xlabel "Время от старта (минуты)" #font ",18"
@@ -37,3 +35,4 @@ plot \
 		with lines ls 2 \
 		axis x1y1 \
 		title "Индикатор подавления несущей" \
+	,\

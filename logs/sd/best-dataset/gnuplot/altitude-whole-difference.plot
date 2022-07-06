@@ -1,8 +1,6 @@
-set datafile separator comma
+load "__common.plot-include"
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Разница высот
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+set datafile separator comma
 
 set xzeroaxis
 set xlabel "Время от старта (минуты)" #font ",18"

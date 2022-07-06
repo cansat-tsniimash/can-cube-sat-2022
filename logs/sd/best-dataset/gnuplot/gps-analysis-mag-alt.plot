@@ -1,8 +1,6 @@
-set datafile separator comma
+load "__common.plot-include"
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-# Индикатор подавления GPS сигнала
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+set datafile separator comma
 
 set xzeroaxis
 set xlabel "Высота (м)" #font ",18"
@@ -21,25 +19,25 @@ set key
 set grid xtics ytics mxtics
 
 plot \
-	'gps-a+SINS_MONHW2-11-0.csv' \
+	'../analysis-scripts/gps-a+SINS_MONHW2-11-0.csv' \
 		using 'baro_altitude':(column('ofs_i_smooth')/255) \
 		with lines ls 1 \
 		axis x1y1 \
 		title "Offset I" \
 	,\
-	'gps-a+SINS_MONHW2-11-0.csv' \
+	'../analysis-scripts/gps-a+SINS_MONHW2-11-0.csv' \
 		using 'baro_altitude':(column('mag_i_smooth')/255) \
 		with lines ls 2 \
 		axis x1y1 \
 		title "Magnitude I" \
 	,\
-	'gps-a+SINS_MONHW2-11-0.csv' \
+	'../analysis-scripts/gps-a+SINS_MONHW2-11-0.csv' \
 		using 'baro_altitude':(column('ofs_q_smooth')/128) \
 		with lines ls 3 \
 		axis x1y1 \
 		title "Offset Q" \
 	,\
-	'gps-a+SINS_MONHW2-11-0.csv' \
+	'../analysis-scripts/gps-a+SINS_MONHW2-11-0.csv' \
 		using 'baro_altitude':(column('mag_q_smooth')/255) \
 		with lines ls 4 \
 		axis x1y1 \
