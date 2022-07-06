@@ -5,8 +5,8 @@
 1. Для создания первичных csv с фильтрацией по времени и дополнительными колонками с временем
 `python make_csv.py -i "T167" --notimestamps --time-steady-start 2450006 --time-steady-stop 10381817 --time-steady-launch 2710973 --output-dir T167_mav_csv_flight --fix-bcu-electricals --time-launch 1656909365`. make_csv находится в cansat-gcs репе
 
-2. Для создания набора с интерполированной высотой для каждой записи
-`python inject_alt.py` Скрипт находится здесь же в папочке `analysis-scripts`
+2. Для создания набора с интерполированной высотой и давлением для каждой записи
+`python inject.py` Скрипт находится здесь же в папочке `analysis-scripts`
 
 
 Интересные события:

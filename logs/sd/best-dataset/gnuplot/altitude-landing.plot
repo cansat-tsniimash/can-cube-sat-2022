@@ -48,7 +48,7 @@ plot \
 	'../PLD_MS5611_DATA-13-2.csv' \
 		using 'mins_from_launch':'altitude' \
 		with lines ls 3 \
-		axis x2y1 \
+		axis x1y1 \
 		title "Барометрическая высота" \
 	,\
 	'../PLD_MS5611_DATA-13-2.csv' \
