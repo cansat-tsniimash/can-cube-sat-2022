@@ -9,10 +9,10 @@ set xrange[-10:120]
 set mxtics
 
 set yzeroaxis
-set ylabel "Среднее RSSI на получаемый пакет (dBm)"
-set ytics 10 nomirror
-set yrange [-100:0]
-set mytics 10
+set ylabel "SNR - Соотношение сигнал/шум (dB?)"
+set ytics 5 nomirror
+set yrange [-15:15]
+set mytics
 
 unset key
 
@@ -26,13 +26,13 @@ set arrow from 110.2515, graph 0 to 110.2515, graph 1 nohead front dt (5, 5, 10,
 
 plot \
 	'../analysis-scripts/a+radio.rssi_packet.csv' \
-		using ((column('time_s')-1656909365)/60):(column('rssi_pkt')) \
+		using ((column('time_s')-1656909365)/60):(column('snr_pkt')) \
 		with lines ls 1 \
 		axis x1y1 \
 		notitle \
 	,\
 	'../analysis-scripts/a+radio.rssi_packet.csv' \
-		using ((column('time_s')-1656909365)/60):(column('rssi_pkt_smooth')) \
+		using ((column('time_s')-1656909365)/60):(column('snr_pkt_smooth')) \
 		with lines ls 2 \
 		axis x1y1 \
 		notitle \
