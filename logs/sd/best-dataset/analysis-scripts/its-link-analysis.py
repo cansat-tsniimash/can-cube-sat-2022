@@ -2,7 +2,7 @@ import pandas as pd
 
 
 for no in [11,12,13]:
-	df = pd.read_csv(f"I2C_LINK_STATS-{no}-0.csv")
+	df = pd.read_csv(f"../I2C_LINK_STATS-{no}-0.csv")
 	df["delta_time"] = df["time_s_from_launch"].diff()
 
 	df["delta_restarts"] = df["restarts_cnt"].diff()

@@ -2,7 +2,7 @@ import pandas as pd
 
 
 for no in [0,1,2,3,4]:
-	df = pd.read_csv(f"COMMISSAR_REPORT-13-{no}.csv")
+	df = pd.read_csv(f"../COMMISSAR_REPORT-13-{no}.csv")
 	df["delta_time"] = df["time_s_from_launch"].diff()
 
 	df["delta_pun"] = df["punishments_counter"].diff()

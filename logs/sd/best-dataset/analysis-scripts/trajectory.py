@@ -5,7 +5,7 @@ from fastkml import kml
 from shapely.geometry import Polygon, LineString, Point as ShapelyPoint
 import pyproj
 
-INPUT = 'GPS_UBX_NAV_SOL-11-0.csv'
+INPUT = '../GPS_UBX_NAV_SOL-11-0.csv'
 OUTPUT = 'GPS_UBX_NAV_SOL-11-0.kml'
 
 Point = namedtuple("Point", ["lon", "lat", "height"])
