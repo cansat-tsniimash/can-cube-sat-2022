@@ -25,8 +25,8 @@ set key right width -10
 set grid xtics ytics
 
 #set style line 1 lt rgb "red" lw 2
-set style fill transparent solid 0.03 noborder
-set style circle radius 500
+set style fill transparent solid 0.05 noborder
+set style circle radius 300
 
 plot \
 	'../analysis-scripts/dist-a+GPS_UBX_NAV_SOL-11-0.csv' \
@@ -41,5 +41,5 @@ plot \
 		axis x1y2 \
 		notitle \
 	,\
-	keyentry with circles lc rgb "blue" fs solid 1 title "SNR", \
 	keyentry with circles lc rgb "red" fs solid 1 title "RSSI", \
+	keyentry with circles lc rgb "blue" fs solid 1 title "SNR", \
