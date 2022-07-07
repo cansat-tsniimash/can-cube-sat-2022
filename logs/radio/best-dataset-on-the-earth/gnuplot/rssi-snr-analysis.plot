@@ -9,7 +9,7 @@ set xrange[-10:120]
 set mxtics
 
 set yzeroaxis
-set ylabel "Среднее RSSI на получаемый пакет (dBm)"
+set ylabel "Среднее RSSI (dBm)"
 set ytics 10 nomirror
 set yrange [-100:0]
 set mytics
@@ -45,7 +45,7 @@ set size 1.0, 0.5
 set origin 0.0,0.0
 
 set yzeroaxis
-set ylabel "SNR - Соотношение сигнал/шум (dB?)"
+set ylabel "SNR (dB?)"
 set ytics 5 nomirror
 set yrange [-15:15]
 set mytic

@@ -25,25 +25,25 @@ set arrow from 78.3373, graph 0 to 78.3373, graph 1 nohead front dt (5, 5, 10, 1
 plot \
 	'../SINS_RXMSVSI-11-0.csv' \
 		using 'mins_from_launch':'num_vis' \
-		with lines ls 1 \
+		with lines ls 1 lw 2\
 		axis x1y1 \
 		title "Количество видимых спутников" \
 	,\
 	'../SINS_RXMSVSI-11-0.csv' \
 		using 'mins_from_launch':'satellites_with_ephs' \
-		with lines ls 2 \
+		with lines ls 2 lw 2 \
 		axis x1y1 \
 		title "Спутников с эфемеридами" \
 	,\
 	'../SINS_RXMSVSI-11-0.csv' \
 		using 'mins_from_launch':'satellites_with_alms' \
-		with lines ls 3 \
+		with lines ls 3 lw 2\
 		axis x1y1 \
 		title "Спутников с альманахом" \
 	,\
 	'../SINS_RXMSVSI-11-0.csv' \
 		using 'mins_from_launch':'	satellites_with_ephs_and_alms' \
-		with lines ls 4 \
+		with lines ls 4 lw 2\
 		axis x1y1 \
 		title "Спутников с альманахом и эфемеридами" \
 	,\
