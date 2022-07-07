@@ -9,7 +9,7 @@ set xrange[-10:120]
 set mxtics
 
 set yzeroaxis
-set ylabel "К" #font ",18"
+set ylabel "Относительное количество сбоев" #font ",18"
 set ytics 0.1 nomirror #font ",18"
 set yrange [-0.1:1.4]
 set mytics

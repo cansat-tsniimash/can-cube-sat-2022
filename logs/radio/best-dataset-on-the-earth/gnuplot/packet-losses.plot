@@ -24,8 +24,12 @@ set multiplot
 set size 1.0, 0.5
 set origin 0.0, 0.5
 
-set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
-set arrow from 110.2515, graph 0 to 110.2515, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+#set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+#set arrow from 110.2515, graph 0 to 110.2515, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+
+set arrow from 58.583, graph 0 to 58.583, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+set arrow from 93.867, graph 0 to 93.867, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
+
 
 plot \
 	'../analysis-scripts/a+lost_frames.csv' \
@@ -53,12 +57,10 @@ set ytics 5 nomirror
 set yrange [-15:15]
 set mytics
 
-set arrow from 78.335, graph 0 to 78.335, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
-set arrow from 110.2515, graph 0 to 110.2515, graph 1 nohead front dt (5, 5, 10, 10) lc rgb 'blue' lw 2
 
 plot \
 	'../analysis-scripts/a+radio.rssi_packet.csv' \
-		using ((column('time_s')-1656909365)/60):(column('snr_pkt_smooth')) \
+		using (column('mins_from_start')):(column('snr_pkt_smooth')) \
 		with lines ls 2 \
 		axis x1y1 \
 		notitle \
