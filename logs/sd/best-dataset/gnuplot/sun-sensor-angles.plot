@@ -40,21 +40,21 @@ plot \
 		every SPACING \
 		with lines ls 2 \
 		axis x1y1 \
-		title "{/Symbol F}" \
+		title "phi" \
 	,\
 	'../SINS_ISC-11-0.csv' \
 		using 'mins_from_launch':(column('light_dir_measured[1]')*180/pi) \
 		every SPACING \
 		with lines ls 1 \
 		axis x1y1 \
-		title "{/Symbol Q}" \
+		title "theta" \
 	,\
 	'../SINS_ISC-11-0.csv' \
 		using 'mins_from_launch':(column('light_dir_real[1]')*180/pi) \
 		every SPACING \
 		with lines ls 5 \
 		axis x1y1 \
-		title "Расчётное {/Symbol Q}" \
+		title "Расчётное theta" \
 	,\
 
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
